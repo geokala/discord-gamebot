@@ -1,33 +1,34 @@
-import discord
+#! /usr/bin/env python3
+"""Discord based game bot."""
 import json
 
+from discord import Game
+from discord.ext.commands import Bot
 
-client = discord.Client()
+
+CLIENT = Bot(command_prefix='!')
+CONFIG = {}
 
 
 def load_config(path):
+    """Load the configuration."""
     with open(path) as conf_handle:
         return json.load(conf_handle)
 
 
-@client.event
+@CLIENT.event
 async def on_ready():
-    """Notify when bot is ready."""
-    print('Logged in as')
-    print(client.user.name)
-    print(client.user.id)
-    print('------')
+    """Output a message when connected."""
+    print("Logged in as " + CLIENT.user.name)
+    await CLIENT.change_presence(activity=Game(name="Warm atomic conflict?"))
 
 
-@client.event
-async def on_message(message):
-    """Respond to messages."""
-    if message.author == client.user:
-        return
-    if message.content == "Test":
-        await client.send_message(message.channel, "Cake")
+@CLIENT.command()
+async def hello(ctx):
+    """Respond to a greeting."""
+    await ctx.send("Shall we play a game?")
 
 
 if __name__ == '__main__':
-    config = load_config('config.json')
-    client.run(config['token'])
+    CONFIG = load_config('config.json')
+    CLIENT.run(CONFIG['token'])

@@ -1,0 +1,15 @@
+To use the bot:
+0. Your machine: Make sure you have a copy of this repo.
+1. Web browser: Create an app under https://discordapp.com/developers/applications
+2. Web browser: Click on the bot tab on the left
+3. Web browser: Create a bot, name it, and put a pretty picture on it.
+4. Web browser: Copy the token
+5. Your machine: Edit config.json, putting the token between the "s where it says "INSERT TOKEN HERE", e.g. "MYSECRETTOKEN"
+6. Note: Don't tell anyone your token. Don't show anyone your token. If you do either of these things, generate a new one in the same place you copied it from.
+7. Note: You will need Manage Server permissions on whatever server you are trying to join.
+8. Web browser: Click the Oauth2 tab.
+9. Web browser: Tick the box that says 'bot' and click copy.
+10. Web browser: Paste the link you just copied.
+11. Web browser: Select the server you wish to add your bot to.
+12. Web browser: Tick the box that says you're not a robot. Even if you are.
+13. Discord server: Go to the server you added the bot to and say !hello
