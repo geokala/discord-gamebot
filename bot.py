@@ -4,6 +4,7 @@ import json
 
 client = discord.Client()
 
+
 def load_config(path):
     with open(path) as conf_handle:
         return json.load(conf_handle)
@@ -12,7 +13,10 @@ def load_config(path):
 @client.event
 async def on_ready():
     """Notify when bot is ready."""
-    print("The bot is ready!")
+    print('Logged in as')
+    print(client.user.name)
+    print(client.user.id)
+    print('------')
 
 
 @client.event
