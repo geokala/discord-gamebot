@@ -240,7 +240,7 @@ async def nominate(ctx, player):
         )
         return
 
-    await ctx.send(game.nominate(_get_id_from_name(ctx, player)))
+    await ctx.send(game.nominate(await _get_id_from_name(ctx, player)))
     await ctx.send(
         "Everyone can now privately say '!vote {channel} ja' or "
         "'!vote {channel} nein'".format(channel=ctx.channel.name)
@@ -423,7 +423,7 @@ async def _act(ctx, target=None):
         return
 
     if target:
-        target = _get_id_from_name(ctx, target)
+        target = await _get_id_from_name(ctx, target)
 
     private, public = game.enact_power(target)
 
@@ -434,25 +434,25 @@ async def _act(ctx, target=None):
 @CLIENT.command()
 async def investigate(ctx, target):
     """Presidential investigation action."""
-    _act(ctx, target)
+    await _act(ctx, target)
 
 
 @CLIENT.command()
 async def peek(ctx):
     """Presidential policy peek action."""
-    _act(ctx)
+    await _act(ctx)
 
 
 @CLIENT.command()
 async def execute(ctx, target):
     """Presidential execution action."""
-    _act(ctx, target)
+    await _act(ctx, target)
 
 
 @CLIENT.command()
 async def elect(ctx, target):
     """Presidential special election action."""
-    _act(ctx, target)
+    await _act(ctx, target)
 
 
 @CLIENT.command()
