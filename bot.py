@@ -127,7 +127,7 @@ async def join(ctx):
     ):
         return
 
-    game = _get_game(ctx, ctx.channel.name)
+    game = await _get_game(ctx, ctx.channel.name)
     if not game:
         return
 
@@ -156,7 +156,7 @@ async def leave(ctx):
     ):
         return
 
-    game = _get_game(ctx, ctx.channel.name)
+    game = await _get_game(ctx, ctx.channel.name)
     if not game:
         return
 
@@ -182,7 +182,7 @@ async def who(ctx):
     ):
         return
 
-    game = _get_game(ctx, ctx.channel.name)
+    game = await _get_game(ctx, ctx.channel.name)
     if not game:
         return
 
@@ -203,7 +203,7 @@ async def go(ctx):  # pylint: disable=invalid-name
     ):
         return
 
-    game = _get_game(ctx, ctx.channel.name)
+    game = await _get_game(ctx, ctx.channel.name)
     if not game:
         await ctx.send("You should !start first to get players.")
         return
@@ -229,7 +229,7 @@ async def nominate(ctx, player):
     ):
         return
 
-    game = _get_game(ctx, ctx.channel.name)
+    game = await _get_game(ctx, ctx.channel.name)
     if not game:
         await ctx.send("You should !start first to get players.")
         return
@@ -250,7 +250,7 @@ async def nominate(ctx, player):
 @CLIENT.command()
 async def vote(ctx, channel, selected_vote):
     """Allow everyone to vote on a proposed government."""
-    game = _get_game(ctx, channel)
+    game = await _get_game(ctx, channel)
     if not game:
         await ctx.send("Couldn't find game {}.".format(channel))
         return
@@ -304,7 +304,7 @@ async def vote(ctx, channel, selected_vote):
 @CLIENT.command()
 async def discard(ctx, channel, policy):
     """Allow the president to discard a policy."""
-    game = _get_game(ctx, channel)
+    game = await _get_game(ctx, channel)
     if not game:
         await ctx.send("Couldn't find game {}.".format(channel))
         return
@@ -348,7 +348,7 @@ async def discard(ctx, channel, policy):
 @CLIENT.command()
 async def select(ctx, channel, policy):
     """Allow the chancellor to select a policy."""
-    game = _get_game(ctx, channel)
+    game = await _get_game(ctx, channel)
     if not game:
         await ctx.send("Couldn't find game {}.".format(channel))
         return
@@ -409,7 +409,7 @@ async def _act(ctx, target=None):
     ):
         return
 
-    game = _get_game(ctx, ctx.channel.name)
+    game = await _get_game(ctx, ctx.channel.name)
 
     if not game:
         await ctx.send("Couldn't find game {}.".format(ctx.channel.name))
@@ -466,7 +466,7 @@ async def veto(ctx):
     ):
         return
 
-    game = _get_game(ctx, ctx.channel.name)
+    game = await _get_game(ctx, ctx.channel.name)
 
     if not game:
         await ctx.send("Couldn't find game {}.".format(ctx.channel.name))
@@ -501,7 +501,7 @@ async def confirm(ctx):
     ):
         return
 
-    game = _get_game(ctx, ctx.channel.name)
+    game = await _get_game(ctx, ctx.channel.name)
 
     if not game:
         await ctx.send("Couldn't find game {}.".format(ctx.channel.name))
@@ -532,7 +532,7 @@ async def show(ctx):
     ):
         return
 
-    game = _get_game(ctx, ctx.channel.name)
+    game = await _get_game(ctx, ctx.channel.name)
 
     if not game:
         await ctx.send("Couldn't find game {}.".format(ctx.channel.name))
@@ -593,7 +593,7 @@ async def stats(ctx):
     """Show the stats."""
     stat_output = ''
     for stat in sorted(TRACKER.stats.keys()):
-        stat_output += '{}: {}'.format(
+        stat_output += '{}: {}\n'.format(
             stat,
             TRACKER.stats[stat],
         )
