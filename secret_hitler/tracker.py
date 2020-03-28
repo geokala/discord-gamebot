@@ -33,7 +33,9 @@ class GameTracker:
                 'A game with ID {} already exists.'.format(game_id)
             )
 
-        self.current_games[game_id] = Game(first_player_id)
+        self.current_games[game_id] = Game()
+        self.current_games[game_id].add_player(first_player_id)
+        self.stats['Currently running games'] += 1
         return self.current_games[game_id]
 
     def cancel_game(self, game_id):
@@ -44,6 +46,7 @@ class GameTracker:
         if game_id in self.current_games:
             self.current_games.pop(game_id)
             self.stats['Cancelled games'] += 1
+            self.stats['Currently running games'] -= 1
         else:
             raise GameNotRunning(
                 '{} was not a running game.'.format(game_id),
@@ -60,6 +63,7 @@ class GameTracker:
             state = self.current_games[game_id]
             if state is not None:
                 self.stats[state] += 1
+                self.stats['Currently running games'] -= 1
             return state
 
         raise GameNotRunning(
