@@ -115,7 +115,7 @@ class Game:
         random.shuffle(self.policy_deck)
         self.assign_roles()
         self.stage = 'Parliament in session'
-        self.round_stage = 'Election'
+        return self.start_election()
 
     def assign_roles(self):
         """Assign roles to players ready to play the game."""
@@ -194,6 +194,7 @@ class Game:
                  a chancellor."""
         self.chancellor = None
         self.player_votes = {}
+        self.presidential_power = None
 
         if self.special_election:
             self.president = self.special_election
@@ -492,8 +493,8 @@ class Game:
                 "{action}".format(action=self.presidential_power),
             )
         else:
-            self.round_stage = 'Election'
-            message += 'It is time to elect the next Government!'
+            message += 'It is time to elect the next Government! '
+            message += self.start_election()
 
         return message
 
@@ -530,11 +531,10 @@ class Game:
             private = "{} is a Fascist.".format(player_id)
         else:
             private = "{} is a Liberal.".format(player_id)
-        self.presidential_power = None
-        self.round_stage = 'Election'
         return (
             private,
-            "The President has investigated {}".format(player_id),
+            "The President has investigated {}".format(player_id)
+            + self.start_election(),
         )
 
     def _special_election(self, player_id):
@@ -545,11 +545,10 @@ class Game:
         if player_id == self.president:
             return "You cannot nominate yourself.", ""
         self.special_election = player_id
-        self.presidential_power = None
-        self.round_stage = 'Election'
         return (
             "",
-            "The President has elected {}".format(player_id),
+            "The President has elected {}".format(player_id)
+            + self.start_election(),
         )
 
     def _peek(self, _):
@@ -558,13 +557,12 @@ class Game:
                   powers.
 
         :return: The private and public result statements."""
-        self.presidential_power = None
-        self.round_stage = 'Election'
         return (
             "The next three policies are: {}".format(
                 ", ".join(self.policy_deck[:3]),
             ),
-            "The President has been advised on upcoming policies.",
+            "The President has been advised on upcoming policies." +
+            self.start_election(),
         )
 
     def _execute(self, player_id):
@@ -583,14 +581,13 @@ class Game:
                 ),
             )
         self.player_ids.pop(player_id)
-        self.presidential_power = None
-        self.round_stage = 'Election'
         return (
             "",
             (
                 "The President formally executes {minister}."
                 "Seances are not allowed in this game, so {minister} "
                 "should not share any useful information until the end "
-                "of the game.".format(minister=player_id)
+                "of the game.".format(minister=player_id) +
+                self.start_election()
             )
         )
