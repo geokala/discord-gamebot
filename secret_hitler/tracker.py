@@ -64,6 +64,7 @@ class GameTracker:
             if state is not None:
                 self.stats[state] += 1
                 self.stats['Currently running games'] -= 1
+                self.current_games.remove(game_id)
             return state
 
         raise GameNotRunning(
