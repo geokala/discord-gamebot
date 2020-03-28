@@ -79,7 +79,7 @@ async def _is_private_channel(ctx, message):
 @CLIENT.command()
 async def start(ctx):
     """Start a game of Secret Hitler."""
-    if not _is_text_channel(
+    if not await _is_text_channel(
             ctx,
             message="The game must be cancelled in a text channel.",
     ):
@@ -102,7 +102,7 @@ async def start(ctx):
 @CLIENT.command()
 async def cancel(ctx):
     """Cancel a game of Secret Hitler."""
-    if not _is_text_channel(
+    if not await _is_text_channel(
             ctx,
             message="The game must be cancelled in the appropriate channel.",
     ):
@@ -121,7 +121,7 @@ async def cancel(ctx):
 @CLIENT.command()
 async def join(ctx):
     """Join a game of secret hitler that is about to start."""
-    if not _is_text_channel(
+    if not await _is_text_channel(
             ctx,
             message="The game must be joined in the appropriate channel.",
     ):
@@ -137,7 +137,7 @@ async def join(ctx):
             "Welcome to the game, {}. "
             "There are currently {} players. "
             "When you are all ready to start, say !go".format(
-                ctx.message.display_name,
+                ctx.message.author.display_name,
                 len(game.player_ids),
             )
         )
@@ -150,7 +150,7 @@ async def join(ctx):
 @CLIENT.command()
 async def leave(ctx):
     """Leave a game of secret hitler that is about to start."""
-    if not _is_text_channel(
+    if not await _is_text_channel(
             ctx,
             message="The game must be joined in the appropriate channel.",
     ):
@@ -165,7 +165,7 @@ async def leave(ctx):
         await ctx.send(
             "Sorry to see you go, {}. "
             "There are currently {} players.".format(
-                ctx.message.display_name,
+                ctx.message.author.display_name,
                 len(game.player_ids),
             )
         )
@@ -176,7 +176,7 @@ async def leave(ctx):
 @CLIENT.command()
 async def who(ctx):
     """List the players of a game of secret hitler."""
-    if not _is_text_channel(
+    if not await _is_text_channel(
             ctx,
             message="The game must be joined in the appropriate channel.",
     ):
@@ -197,7 +197,7 @@ async def who(ctx):
 @CLIENT.command()
 async def go(ctx):  # pylint: disable=invalid-name
     """Start a game of secret hitler now that players have joined."""
-    if not _is_text_channel(
+    if not await _is_text_channel(
             ctx,
             message="The game must be started in the appropriate channel.",
     ):
@@ -223,7 +223,7 @@ async def go(ctx):  # pylint: disable=invalid-name
 @CLIENT.command()
 async def nominate(ctx, player):
     """Allow the president to nominate their chancellor."""
-    if not _is_text_channel(
+    if not await _is_text_channel(
             ctx,
             message="The nomination must be declared publically.",
     ):
@@ -401,7 +401,7 @@ async def select(ctx, channel, policy):
 
 async def _act(ctx, target=None):
     """Generic presidential power action."""
-    if not _is_text_channel(
+    if not await _is_text_channel(
             ctx,
             message=(
                 "Executive action should be performed publically."
@@ -458,7 +458,7 @@ async def elect(ctx, target):
 @CLIENT.command()
 async def veto(ctx):
     """Chancellor's veto action."""
-    if not _is_text_channel(
+    if not await _is_text_channel(
             ctx,
             message=(
                 "Veto should be performed publically."
@@ -493,7 +493,7 @@ async def veto(ctx):
 @CLIENT.command()
 async def confirm(ctx):
     """President's veto confirmation."""
-    if not _is_text_channel(
+    if not await _is_text_channel(
             ctx,
             message=(
                 "Veto should be confirmed publically."
@@ -524,7 +524,7 @@ async def confirm(ctx):
 @CLIENT.command()
 async def show(ctx):
     """Show the board state."""
-    if not _is_text_channel(
+    if not await _is_text_channel(
             ctx,
             message=(
                 "Show can only be called publically."
@@ -560,7 +560,7 @@ async def show(ctx):
     ]
     fascist_row.append(key['Fascists win'])
     liberal_row = [
-        key[u"\u25FB\uFE0F"] for i in range(4)
+        u"\u25FB\uFE0F" for i in range(4)
     ]
     liberal_row.append(key['Liberals win'])
 
@@ -581,8 +581,8 @@ async def show(ctx):
         '\n'
         'Key:\n'
         '{key}'.format(
-            fascist=fascist_row,
-            liberal=liberal_row,
+            fascist=''.join(fascist_row),
+            liberal=''.join(liberal_row),
             key=key_output,
         )
     )
