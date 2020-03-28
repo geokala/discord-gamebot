@@ -260,7 +260,7 @@ async def vote(ctx, channel, selected_vote):
                        'chancellor is nominated.')
         return
 
-    if not _is_private_channel(
+    if not await _is_private_channel(
             ctx,
             message=(
                 "Voting should be performed privately. "
@@ -316,7 +316,7 @@ async def discard(ctx, channel, policy):
                        'session by the president.')
         return
 
-    if not _is_private_channel(
+    if not await _is_private_channel(
             ctx,
             message=(
                 "Discarding should be performed privately. "
@@ -360,7 +360,7 @@ async def select(ctx, channel, policy):
                        'session by the president.')
         return
 
-    if not _is_private_channel(
+    if not await _is_private_channel(
             ctx,
             message=(
                 "Policy selection should be performed privately. "
