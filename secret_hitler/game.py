@@ -73,6 +73,21 @@ class Game:
 
         self.player_ids.append(player_id)
 
+    def remove_player(self, player_id):
+        """Remove a player from a game that is being prepared.
+        :param player_id: The string ID of the player to be removed.
+
+        :raises GameInProgress: If the game has already been launched."""
+        if self.stage != 'General election':
+            raise GameInProgress(
+                'Parliament is already in session and is not accepting new '
+                'ministers.'
+            )
+
+        if player_id in self.player_ids:
+            self.player_ids.remove(player_id)
+        # If not then the player isn't in the game, so... mission accomplished
+
     def launch_game(self):
         """Launch the game, if we have enough players!
 
