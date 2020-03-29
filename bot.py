@@ -44,7 +44,7 @@ async def roll(ctx, dice='1d100'):
     try:
         count = int(count)
         sides = int(sides)
-    except TypeError:
+    except ValueError:
         await ctx.send(
             'Either {} is not an integer, or {} is not an integer.\n'
             'Try again, e.g. using 2d6'.format(
