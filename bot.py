@@ -68,6 +68,20 @@ async def roll(ctx, dice='1d100'):
         )
         return
 
+    if count > 30:
+        await ctx.send(
+            'I only have 30 dice in my dice box, sorry.'
+        )
+        return
+
+    if sides > 100:
+        await ctx.send(
+            'Sorry, someone stole all the dice I had with more than 100 '
+            'sides. Something really needs to be done about the crime around '
+            'here!'
+        )
+        return
+
     results = []
     for _ in range(count):
         results.append(random.randint(1, sides + 1))
