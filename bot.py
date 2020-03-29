@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 """Discord based game bot."""
 import json
+import random
 
 from discord import Game, DMChannel, TextChannel, utils, ChannelType
 from discord.ext.commands import Bot
@@ -28,6 +29,57 @@ def load_config(path):
     """Load the configuration."""
     with open(path) as conf_handle:
         return json.load(conf_handle)
+
+
+@CLIENT.command()
+async def roll(ctx, dice='1d100'):
+    """Roll dice."""
+    dice_split = dice.split('d')
+    if len(dice_split) != 2:
+        await ctx.send('Expected to see !roll xdy, e.g. 2d6')
+        return
+
+    count, sides = dice_split
+
+    try:
+        count = int(count)
+        sides = int(sides)
+    except TypeError:
+        await ctx.send(
+            'Either {} is not an integer, or {} is not an integer.\n'
+            'Try again, e.g. using 2d6'.format(
+                count, sides,
+            )
+        )
+        return
+
+    if count < 1:
+        await ctx.send('Rolling less than one dice was really quick!')
+        return
+
+    if sides < 1:
+        await ctx.send(
+            'Rolling dice with less than 0 sides...\n'
+            'Assuming all values are 42.\n'
+            'Results: {}{}'.format(
+                ' '.join('42' for i in range(count)),
+                '\nTotal: {}'.format(42 * count) if count > 1 else "",
+            )
+        )
+        return
+
+    results = []
+    for _ in range(count):
+        results.append(random.randint(1, sides + 1))
+
+    await ctx.send(
+        'Rolling {}\n'
+        'Results: {}{}'.format(
+            dice,
+            ' '.join(str(r) for r in results),
+            '\nTotal: {}'.format(sum(results)) if count > 1 else "",
+        )
+    )
 
 
 @CLIENT.event
