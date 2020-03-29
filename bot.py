@@ -26,14 +26,14 @@ TRACKER = GameTracker()
 
 
 def load_config(path):
-    """Load the configuration."""
+    """Load the configuration"""
     with open(path) as conf_handle:
         return json.load(conf_handle)
 
 
 @CLIENT.command()
 async def roll(ctx, dice='1d100'):
-    """Roll dice."""
+    """Roll dice"""
     dice_split = dice.split('d')
     if len(dice_split) != 2:
         await ctx.send('Expected to see !roll xdy, e.g. 2d6')
@@ -98,7 +98,7 @@ async def roll(ctx, dice='1d100'):
 
 @CLIENT.event
 async def on_ready():
-    """Output a message when connected."""
+    """Output a message when connected"""
     print("Logged in as " + CLIENT.user.name)
     await CLIENT.change_presence(activity=Game(
         name="Secret Hitler (0 games)",
@@ -107,17 +107,17 @@ async def on_ready():
 
 @CLIENT.command()
 async def hello(ctx):
-    """Respond to a greeting."""
+    """Respond to a greeting"""
     await ctx.send("Shall we play a game?")
 
 
 async def _get_id_from_name(ctx, player):
-    """Translate the user's name to their ID."""
+    """Translate the user's name to their ID"""
     return ctx.message.server.get_member_named(player).id
 
 
 async def _get_game(ctx, name):
-    """Get the game for this channel."""
+    """Get the game for this channel"""
     game = TRACKER.current_games.get(name)
     if not game:
         await ctx.send("No game exists in channel {}.".format(name))
@@ -126,7 +126,7 @@ async def _get_game(ctx, name):
 
 async def _is_text_channel(ctx, message):
     """Ensure we're operating on a text channel. Complain with the given
-    message if we're not."""
+    message if we're not"""
     if not isinstance(ctx.channel, TextChannel):
         await ctx.send(message)
         return False
@@ -135,7 +135,7 @@ async def _is_text_channel(ctx, message):
 
 async def _is_private_channel(ctx, message):
     """Ensure we're operating on a private channel. Complain with the given
-    message if we're not."""
+    message if we're not"""
     if not isinstance(ctx.channel, DMChannel):
         await ctx.send(message)
         return False
@@ -144,7 +144,7 @@ async def _is_private_channel(ctx, message):
 
 @CLIENT.command()
 async def start(ctx):
-    """Start a game of Secret Hitler."""
+    """Start a game of Secret Hitler"""
     if not await _is_text_channel(
             ctx,
             message="The game must be cancelled in a text channel.",
@@ -167,7 +167,7 @@ async def start(ctx):
 
 @CLIENT.command()
 async def cancel(ctx):
-    """Cancel a game of Secret Hitler."""
+    """Cancel a game of Secret Hitler"""
     if not await _is_text_channel(
             ctx,
             message="The game must be cancelled in the appropriate channel.",
@@ -186,7 +186,7 @@ async def cancel(ctx):
 
 @CLIENT.command()
 async def join(ctx):
-    """Join a game of secret hitler that is about to start."""
+    """Join a game of secret hitler that is about to start"""
     if not await _is_text_channel(
             ctx,
             message="The game must be joined in the appropriate channel.",
@@ -215,7 +215,7 @@ async def join(ctx):
 
 @CLIENT.command()
 async def leave(ctx):
-    """Leave a game of secret hitler that is about to start."""
+    """Leave a game of secret hitler that is about to start"""
     if not await _is_text_channel(
             ctx,
             message="The game must be joined in the appropriate channel.",
@@ -241,7 +241,7 @@ async def leave(ctx):
 
 @CLIENT.command()
 async def who(ctx):
-    """List the players of a game of secret hitler."""
+    """List the players of a game of secret hitler"""
     if not await _is_text_channel(
             ctx,
             message="The game must be joined in the appropriate channel.",
@@ -262,7 +262,7 @@ async def who(ctx):
 
 @CLIENT.command()
 async def go(ctx):  # pylint: disable=invalid-name
-    """Start a game of secret hitler now that players have joined."""
+    """Start a game of secret hitler now that players have joined"""
     if not await _is_text_channel(
             ctx,
             message="The game must be started in the appropriate channel.",
@@ -288,7 +288,7 @@ async def go(ctx):  # pylint: disable=invalid-name
 
 @CLIENT.command()
 async def nominate(ctx, player):
-    """Allow the president to nominate their chancellor."""
+    """Allow the president to nominate their chancellor"""
     if not await _is_text_channel(
             ctx,
             message="The nomination must be declared publically.",
@@ -315,7 +315,7 @@ async def nominate(ctx, player):
 
 @CLIENT.command()
 async def vote(ctx, channel, selected_vote):
-    """Allow everyone to vote on a proposed government."""
+    """Allow everyone to vote on a proposed government"""
     game = await _get_game(ctx, channel)
     if not game:
         await ctx.send("Couldn't find game {}.".format(channel))
@@ -369,7 +369,7 @@ async def vote(ctx, channel, selected_vote):
 
 @CLIENT.command()
 async def discard(ctx, channel, policy):
-    """Allow the president to discard a policy."""
+    """Allow the president to discard a policy"""
     game = await _get_game(ctx, channel)
     if not game:
         await ctx.send("Couldn't find game {}.".format(channel))
@@ -413,7 +413,7 @@ async def discard(ctx, channel, policy):
 
 @CLIENT.command()
 async def select(ctx, channel, policy):
-    """Allow the chancellor to select a policy."""
+    """Allow the chancellor to select a policy"""
     game = await _get_game(ctx, channel)
     if not game:
         await ctx.send("Couldn't find game {}.".format(channel))
@@ -466,7 +466,7 @@ async def select(ctx, channel, policy):
 
 
 async def _act(ctx, target=None):
-    """Generic presidential power action."""
+    """Generic presidential power action"""
     if not await _is_text_channel(
             ctx,
             message=(
@@ -499,31 +499,31 @@ async def _act(ctx, target=None):
 
 @CLIENT.command()
 async def investigate(ctx, target):
-    """Presidential investigation action."""
+    """Presidential investigation action"""
     await _act(ctx, target)
 
 
 @CLIENT.command()
 async def peek(ctx):
-    """Presidential policy peek action."""
+    """Presidential policy peek action"""
     await _act(ctx)
 
 
 @CLIENT.command()
 async def execute(ctx, target):
-    """Presidential execution action."""
+    """Presidential execution action"""
     await _act(ctx, target)
 
 
 @CLIENT.command()
 async def elect(ctx, target):
-    """Presidential special election action."""
+    """Presidential special election action"""
     await _act(ctx, target)
 
 
 @CLIENT.command()
 async def veto(ctx):
-    """Chancellor's veto action."""
+    """Chancellor's veto action"""
     if not await _is_text_channel(
             ctx,
             message=(
@@ -558,7 +558,7 @@ async def veto(ctx):
 
 @CLIENT.command()
 async def confirm(ctx):
-    """President's veto confirmation."""
+    """President's veto confirmation"""
     if not await _is_text_channel(
             ctx,
             message=(
@@ -589,7 +589,7 @@ async def confirm(ctx):
 
 @CLIENT.command()
 async def show(ctx):
-    """Show the board state."""
+    """Show the board state"""
     if not await _is_text_channel(
             ctx,
             message=(
@@ -656,7 +656,7 @@ async def show(ctx):
 
 @CLIENT.command()
 async def stats(ctx):
-    """Show the stats."""
+    """Show the stats"""
     stat_output = ''
     for stat in sorted(TRACKER.stats.keys()):
         stat_output += '{}: {}\n'.format(
