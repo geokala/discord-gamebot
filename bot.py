@@ -84,7 +84,7 @@ async def roll(ctx, dice='1d100'):
 
     results = []
     for _ in range(count):
-        results.append(random.randint(1, sides + 1))
+        results.append(random.randint(1, sides))
 
     await ctx.send(
         'Rolling {}\n'
