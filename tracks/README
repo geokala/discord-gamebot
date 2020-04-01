@@ -1,0 +1,4 @@
+Put mp3s in here for use with the noisebot.
+They should have an extension of .mp3.
+Their name (other than the .mp3 extension) should consist of only the following characters:
+abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-
