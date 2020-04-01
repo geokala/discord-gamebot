@@ -21,7 +21,8 @@ class GameTracker:
     }
     current_games = {}
 
-    def start_game(self, game_id, first_player_id):
+    def start_game(self, game_id, first_player_id,
+                   name_mapping):
         """Start a game of secret hitler.
         :param game_id: A string ID for the game.
 
@@ -34,7 +35,7 @@ class GameTracker:
             )
 
         self.current_games[game_id] = Game()
-        self.current_games[game_id].add_player(first_player_id)
+        self.current_games[game_id].add_player(first_player_id, name_mapping)
         self.stats['Currently running games'] += 1
         return self.current_games[game_id]
 

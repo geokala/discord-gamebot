@@ -2,7 +2,6 @@
 import random
 
 from secret_hitler.exceptions import (
-    IneligibleChancellor,
     InvalidPolicyType,
     GameEnded,
     GameInProgress,
@@ -50,7 +49,9 @@ class Game:
     veto_request = False
     investigated = []
 
-    def add_player(self, player_id):
+    name_mappings = {}
+
+    def add_player(self, player_id, name_mapping=None):
         """Add a player to a game that is being prepared.
         :param player_id: The string ID of the player to be added.
 
@@ -73,6 +74,11 @@ class Game:
 
         self.player_ids.append(player_id)
 
+        if name_mapping:
+            self.name_mappings[player_id] = name_mapping
+        else:
+            self.name_mappings[player_id] = player_id
+
     def remove_player(self, player_id):
         """Remove a player from a game that is being prepared.
         :param player_id: The string ID of the player to be removed.
@@ -86,6 +92,7 @@ class Game:
 
         if player_id in self.player_ids:
             self.player_ids.remove(player_id)
+            self.name_mappings.pop(player_id)
         # If not then the player isn't in the game, so... mission accomplished
 
     def launch_game(self):
@@ -151,7 +158,7 @@ class Game:
                 "{minister}, you are a liberal. You suspect there are "
                 "{fascist_count} fascists in this parliament. Be "
                 "vigilant!".format(
-                    minister=player_id,
+                    minister=self.name_mappings[player_id],
                     fascist_count=len(self.fascists),
                 )
             )
@@ -160,7 +167,7 @@ class Game:
             message = "{minister}, you are hitler! "
             if self.hitler_knows_fascists:
                 message += (
-                    "Fortunately, you know your fellow ne'er-do-wells: "
+                    "Fortunately, you know your fellow ne'er-do-well: "
                     "{fascists}"
                 )
             else:
@@ -168,17 +175,22 @@ class Game:
                     "You suspect you have {other_fascist_count} allies."
                 )
             return message.format(
-                minister=player_id,
-                fascists=', '.join(self.fascists),
+                minister=self.name_mappings[player_id],
+                fascists=', '.join([self.name_mappings[fascist]
+                                    for fascist in self.fascists
+                                    if fascist != player_id]),
                 other_fascist_count=len(self.fascists) - 1,
             )
 
         return (
             "{minister}, you are a fascist. Your glorious(ly evil) leader is "
             "{hitler}. Your fellow fascists are: {fascists}".format(
-                minister=player_id,
-                fascists=', '.join(self.fascists),
-                hitler=self.hitler,
+                minister=self.name_mappings[player_id],
+                fascists=', '.join([self.name_mappings[fascist]
+                                    for fascist in self.fascists
+                                    if fascist not in (player_id,
+                                                       self.hitler)]),
+                hitler=self.name_mappings[self.hitler],
             )
         )
 
@@ -205,20 +217,27 @@ class Game:
             else:
                 # First round
                 self.president = random.choice(self.player_ids)
-            self.next_president = (
+            self.next_president = self.player_ids[
                 (self.player_ids.index(self.president) + 1)
                 % len(self.player_ids)
-            )
+            ]
 
         ineligible = [minister for minister in self.term_limited
                       if minister != self.president]
         self.round_stage = 'Election'
 
+        message = "President {president} must now select their chancellor."
+
+        if len(ineligible) > 0:
+            message += (
+                "The following minister(s) are term limited: {ineligible}"
+            )
+
         return (
-            "President {president} must now select their chancellor. The "
-            "following minister(s) are term limited: {ineligible}".format(
-                president=self.president,
-                ineligible=', '.join(ineligible),
+            message.format(
+                president=self.name_mappings[self.president],
+                ineligible=', '.join([self.name_mappings[minister]
+                                      for minister in ineligible]),
             )
         )
 
@@ -232,12 +251,21 @@ class Game:
         eligible = [minister for minister in self.player_ids
                     if minister != self.president
                     and minister not in self.term_limited]
+        if player_id not in self.player_ids:
+            return (
+                'A living minister must be selected. Eligible Chancellors '
+                'are: {eligible}'.format(
+                    eligible=', '.join([self.name_mappings[minister]
+                                        for minister in eligible]),
+                )
+            )
         if player_id not in eligible:
-            raise IneligibleChancellor(
+            return (
                 'The previous or current President and the previous '
                 'Chancellor are not eligible to become chancellor. '
                 'Eligible Chancellors are: {eligible}'.format(
-                    eligible=', '.join(eligible),
+                    eligible=', '.join([self.name_mappings[minister]
+                                        for minister in eligible]),
                 )
             )
 
@@ -247,8 +275,8 @@ class Game:
             'A government has been proposed: President {president} with '
             'Chancellor {chancellor}. Ministers should discuss and vote on '
             'this proposal.'.format(
-                president=self.president,
-                chancellor=self.chancellor,
+                president=self.name_mappings[self.president],
+                chancellor=self.name_mappings[self.chancellor],
             )
         )
 
@@ -262,14 +290,18 @@ class Game:
         self.player_votes[player_id] = vote
 
         if len(self.player_votes) == len(self.player_ids):
-            yes_votes = [minister for minister in self.player_ids
+            yes_votes = [self.name_mappings[minister]
+                         for minister in self.player_ids
                          if self.player_votes[minister]]
-            no_votes = [minister for minister in self.player_ids
+            no_votes = [self.name_mappings[minister]
+                        for minister in self.player_ids
                         if not self.player_votes[minister]]
 
             message = 'Voting complete! '
-            message += 'Ja votes: {} ; '.format(', '.join(yes_votes))
-            message += 'Nein votes: {} ; '.format(', '.join(no_votes))
+            if len(yes_votes) > 0:
+                message += 'Ja votes: {} ; '.format(', '.join(yes_votes))
+            if len(no_votes) > 0:
+                message += 'Nein votes: {} ; '.format(', '.join(no_votes))
 
             if yes_votes > no_votes:
                 if (
@@ -294,7 +326,10 @@ class Game:
             else:
                 return self._check_failing_government()
             return  message
-        return ""
+        return "{}/{} votes cast!".format(
+            len(self.player_votes),
+            len(self.player_ids),
+        )
 
     def _check_failing_government(self):
         """Determine whether the government is failing enough to cause chaos.
@@ -420,7 +455,7 @@ class Game:
             self.discard_deck.append(self.president_policies.pop())
             message = (
                 'Nice try, but there are no {policy} policies. '
-                'Discarding one of the available policies.'.format(
+                'One of the available policieswas discarded.'.format(
                     policy=policy,
                 )
             )
@@ -490,7 +525,7 @@ class Game:
             self.round_stage = 'Executive Action'
             message += (
                 "New powers have been granted to the president, who must: "
-                "{action}".format(action=self.presidential_power),
+                "{action}".format(action=self.presidential_power)
             )
         else:
             message += 'It is time to elect the next Government! '
@@ -523,18 +558,19 @@ class Game:
         if player_id in self.investigated:
             return (
                 '{} has already been investigated. Choose again.'.format(
-                    player_id,
+                    self.name_mappings[player_id],
                 ), ""
             )
         self.investigated.append(player_id)
         if player_id in self.fascists:
-            private = "{} is a Fascist.".format(player_id)
+            private = "{} is a Fascist.".format(self.name_mappings[player_id])
         else:
-            private = "{} is a Liberal.".format(player_id)
+            private = "{} is a Liberal.".format(self.name_mappings[player_id])
         return (
             private,
-            "The President has investigated {}".format(player_id)
-            + self.start_election(),
+            "The President has investigated {}".format(
+                self.name_mappings[player_id]
+            ) + self.start_election(),
         )
 
     def _special_election(self, player_id):
@@ -547,8 +583,9 @@ class Game:
         self.special_election = player_id
         return (
             "",
-            "The President has elected {}".format(player_id)
-            + self.start_election(),
+            "The President has elected {}".format(
+                self.name_mappings[player_id]
+            ) + self.start_election(),
         )
 
     def _peek(self, _):
@@ -577,7 +614,9 @@ class Game:
                 (
                     "The President formally executes {}. "
                     "Hitler has been executed, the Liberals win. "
-                    "(with blood on their hands).".format(player_id)
+                    "(with blood on their hands).".format(
+                        self.name_mappings[player_id],
+                    )
                 ),
             )
         self.player_ids.pop(player_id)
@@ -587,7 +626,8 @@ class Game:
                 "The President formally executes {minister}."
                 "Seances are not allowed in this game, so {minister} "
                 "should not share any useful information until the end "
-                "of the game.".format(minister=player_id) +
-                self.start_election()
+                "of the game.".format(
+                    minister=self.name_mappings[player_id]
+                ) + self.start_election()
             )
         )

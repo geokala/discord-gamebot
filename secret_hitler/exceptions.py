@@ -10,11 +10,6 @@ class GameNotRunning(Exception):
     exist."""
 
 
-class IneligibleChancellor(Exception):
-    """Raised by the game when someone ineligible to be chancellor is
-    nominated."""
-
-
 class InvalidPolicyType(Exception):
     """Raised by the game when an invalid policy is selected."""
 

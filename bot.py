@@ -23,6 +23,7 @@ from secret_hitler.tracker import GameTracker
 CLIENT = Bot(command_prefix='!')
 CONFIG = {}
 TRACKER = GameTracker()
+PLAYERS = {}
 
 
 def load_config(path):
@@ -111,9 +112,9 @@ async def hello(ctx):
     await ctx.send("Shall we play a game?")
 
 
-async def _get_id_from_name(ctx, player):
+async def _get_id_from_name(_, player):
     """Translate the user's name to their ID"""
-    return ctx.message.server.get_member_named(player).id
+    return PLAYERS[player]
 
 
 async def _get_game(ctx, name):
@@ -151,7 +152,9 @@ async def start(ctx):
     ):
         return
     try:
-        TRACKER.start_game(ctx.channel.name, ctx.message.author.id)
+        PLAYERS[ctx.message.author.display_name] = ctx.message.author.id
+        TRACKER.start_game(ctx.channel.name, ctx.message.author.id,
+                           ctx.message.author.display_name)
         await ctx.send(
             'Preparing to start game.\n'
             'Players can join or leave with !join and !leave.\n'
@@ -197,8 +200,11 @@ async def join(ctx):
     if not game:
         return
 
+    PLAYERS[ctx.message.author.display_name] = ctx.message.author.id
+
     try:
-        game.add_player(ctx.message.author.id)
+        game.add_player(ctx.message.author.id,
+                        ctx.message.author.display_name)
         await ctx.send(
             "Welcome to the game, {}. "
             "There are currently {} players. "
@@ -275,7 +281,7 @@ async def go(ctx):  # pylint: disable=invalid-name
         return
 
     try:
-        await ctx.send(game.launch_game)
+        await ctx.send(game.launch_game())
         for player in [CLIENT.get_user(user_id) for user_id in game.player_ids]:
             await player.send(game.get_starting_knowledge(player.id))
     except GameInProgress as err:
@@ -300,13 +306,15 @@ async def nominate(ctx, player):
         await ctx.send("You should !start first to get players.")
         return
 
-    if not game.round_state == 'Election':
+    if not game.round_stage == 'Election':
         await ctx.send(
             'Nomination is only applicable during the Election stage.'
         )
         return
 
-    await ctx.send(game.nominate(await _get_id_from_name(ctx, player)))
+    await ctx.send(game.nominate_chancellor(
+        await _get_id_from_name(ctx, player),
+    ))
     await ctx.send(
         "Everyone can now privately say '!vote {channel} ja' or "
         "'!vote {channel} nein'".format(channel=ctx.channel.name)
@@ -321,7 +329,7 @@ async def vote(ctx, channel, selected_vote):
         await ctx.send("Couldn't find game {}.".format(channel))
         return
 
-    if not game.round_state == 'Election' or not game.chancellor:
+    if not game.round_stage == 'Election' or not game.chancellor:
         await ctx.send('Voting can only be performed in an election after a'
                        'chancellor is nominated.')
         return
@@ -377,7 +385,7 @@ async def discard(ctx, channel, policy):
 
     is_president = ctx.message.author.id == game.president
 
-    if not game.round_state == 'Legislative Session' or not is_president:
+    if not game.round_stage == 'Legislative Session' or not is_president:
         await ctx.send('Discarding can only be performed in a legistlative '
                        'session by the president.')
         return
@@ -421,7 +429,7 @@ async def select(ctx, channel, policy):
 
     is_chancellor = ctx.message.author.id == game.chancellor
 
-    if not game.round_state == 'Legislative Session' or not is_chancellor:
+    if not game.round_stage == 'Legislative Session' or not is_chancellor:
         await ctx.send('Discarding can only be performed in a legistlative '
                        'session by the president.')
         return
@@ -483,7 +491,7 @@ async def _act(ctx, target=None):
 
     is_president = ctx.message.author.id == game.president
 
-    if not game.round_state == 'Executive Action' or not is_president:
+    if not game.round_stage == 'Executive Action' or not is_president:
         await ctx.send('Executive actions can only be performed during '
                        'Executive Action by the president.')
         return
@@ -545,7 +553,7 @@ async def veto(ctx):
                        'policies.')
         return
 
-    if not game.round_state == 'Legislative Session' or not is_chancellor:
+    if not game.round_stage == 'Legislative Session' or not is_chancellor:
         await ctx.send('Vetos can only be requested during Legislative Session'
                        'by the chancellor.')
         return
@@ -579,7 +587,7 @@ async def confirm(ctx):
         await ctx.send('The president can only confirm a veto after it is '
                        'requested by the chancellor saying !veto.')
 
-    if not game.round_state == 'Legislative Session' or not is_president:
+    if not game.round_stage == 'Legislative Session' or not is_president:
         await ctx.send('Vetos can only be confirmed during Legislative Session'
                        'by the president.')
         return
@@ -664,6 +672,22 @@ async def stats(ctx):
             TRACKER.stats[stat],
         )
     await ctx.send(stat_output)
+
+
+@CLIENT.command()
+async def debug(ctx, attr):
+    """Debug commands."""
+    if ctx.message.author.id == CONFIG['owner_id']:
+        game = await _get_game(ctx, ctx.channel.name)
+        await ctx.send(getattr(game, attr))
+
+
+@CLIENT.command()
+async def bebug(ctx, attr, *args):
+    """Run parts of the game"""
+    if ctx.message.author.id == CONFIG['owner_id']:
+        game = await _get_game(ctx, ctx.channel.name)
+        await ctx.send(str(getattr(game, attr)(*args)))
 
 
 if __name__ == '__main__':
