@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 """Discord based game bot."""
 import asyncio
+import functools
 import json
 import os
 import string
@@ -26,13 +27,43 @@ async def on_ready():
     await CLIENT.change_presence(activity=Game(
         name="Making noise",
     ))
+    available_noises = [
+        track[:-4]
+        for track in os.listdir('tracks')
+        if track.endswith('.mp3')
+    ]
     print('Available noises: {}'.format(
-        ', '.join([
-            track[:-4]
-            for track in os.listdir('tracks')
-            if track.endswith('.mp3')
-        ]),
+        ', '.join(available_noises),
     ))
+    existing_commands = [
+        'play', 'close', 'stop',
+    ]
+    for noise in available_noises:
+        if (
+                noise in existing_commands
+                or noise[0] in (string.digits + '-')
+        ):
+            print(
+                'Could not create command for {command}. '
+                'Please ensure all noises have names that are not in this '
+                'list: {existing}\n'
+                'Names must not start with a number and must not contain '
+                'any hyphen (-) if you wish them to be made into commands.'
+                .format(
+                    command=noise,
+                    existing=', '.join(existing_commands),
+                )
+            )
+        else:
+            CLIENT.command(
+                name=noise,
+                help="Play {} sound".format(noise),
+            )(
+                func=asyncio.coroutine(
+                    functools.partial(_play, track=noise),
+                ),
+            )
+            print('Created command to play {0}: .{0}'.format(noise))
 
 
 async def _get_voice_client(ctx):
@@ -96,15 +127,6 @@ async def stop(ctx):
 async def play(ctx, track):
     """Play the specified noise."""
     await _play(ctx, track)
-
-
-# Example- make more named sections like this to have specific sound commands.
-# This example will play the tracks/roar.mp3 into the voice channel you are in
-# whenever you say .roar
-# @CLIENT.command()
-# async def roar(ctx):
-#     """Play a lion's roar!"""
-#     await _play(ctx, 'roar')
 
 
 if __name__ == '__main__':
