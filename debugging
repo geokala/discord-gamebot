@@ -1,6 +1,4 @@
-get_finished_state
 cast_vote(player_id, half negative)
-cast_vote(player_id, hitler chancellor win)
 veto
 veto_confirm
 select_policy(in hand, lib) -> passed policy, empty hands, election
@@ -9,7 +7,6 @@ enact_power(target) execute
 enact_power(target) execute hitler
 enact_power(target) call special election
 enact_power(president) call special election
-enact_power() peek
 
 !bebug add_player t1
 !bebug add_player t2

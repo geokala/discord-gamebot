@@ -422,7 +422,7 @@ class Game:
 
         if policy == 'Fascist' and not skip_power and fascist_policies > 1:
             powers = self.get_fascist_policy_powers()
-            self.presidential_power = powers[fascist_policies]
+            self.presidential_power = powers[fascist_policies - 1]
 
         self.election_failures = 0
 
@@ -455,7 +455,7 @@ class Game:
             self.discard_deck.append(self.president_policies.pop())
             message = (
                 'Nice try, but there are no {policy} policies. '
-                'One of the available policieswas discarded.'.format(
+                'One of the available policies was discarded.'.format(
                     policy=policy,
                 )
             )
@@ -568,7 +568,7 @@ class Game:
             private = "{} is a Liberal.".format(self.name_mappings[player_id])
         return (
             private,
-            "The President has investigated {}".format(
+            "The President has investigated {}. ".format(
                 self.name_mappings[player_id]
             ) + self.start_election(),
         )
@@ -583,7 +583,7 @@ class Game:
         self.special_election = player_id
         return (
             "",
-            "The President has elected {}".format(
+            "The President has elected {}. ".format(
                 self.name_mappings[player_id]
             ) + self.start_election(),
         )
@@ -598,7 +598,7 @@ class Game:
             "The next three policies are: {}".format(
                 ", ".join(self.policy_deck[:3]),
             ),
-            "The President has been advised on upcoming policies." +
+            "The President has been advised on upcoming policies. " +
             self.start_election(),
         )
 
@@ -626,7 +626,7 @@ class Game:
                 "The President formally executes {minister}."
                 "Seances are not allowed in this game, so {minister} "
                 "should not share any useful information until the end "
-                "of the game.".format(
+                "of the game. ".format(
                     minister=self.name_mappings[player_id]
                 ) + self.start_election()
             )

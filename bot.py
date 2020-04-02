@@ -366,7 +366,7 @@ async def vote(ctx, channel, selected_vote):
 
     if not game.end_state:
         CLIENT.get_user(game.president).send(
-            "Discard a policy with '!discard.{channel} Liberal' "
+            "Discard a policy with '!discard {channel} Liberal' "
             "or '!discard {channel} Fascist.' "
             'Available policies: {policies}'.format(
                 channel=channel,
@@ -685,6 +685,8 @@ async def debug(ctx, attr):
 @CLIENT.command()
 async def bebug(ctx, attr, *args):
     """Run parts of the game"""
+    for arg in args:
+        print(arg)
     if ctx.message.author.id == CONFIG['owner_id']:
         game = await _get_game(ctx, ctx.channel.name)
         await ctx.send(str(getattr(game, attr)(*args)))
