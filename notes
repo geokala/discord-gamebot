@@ -5,3 +5,4 @@ Make bot say how many have voted after each vote, and how many it is waiting for
 Make commands complain if target player is not in the game
 Don't say "The following minister(s) are term limited:" if they aren't.
 Don't include the current player in the list of fascists
+Save and reload stats when everything else is ready.
