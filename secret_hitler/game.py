@@ -287,6 +287,8 @@ class Game:
 
         :param player_id: The string ID of the player to be added.
         :param vote: Boolean: True for Ja, False for Nein"""
+        if player_id not in self.player_ids:
+            return ""
         self.player_votes[player_id] = vote
 
         if len(self.player_votes) == len(self.player_ids):
@@ -303,7 +305,7 @@ class Game:
             if len(no_votes) > 0:
                 message += 'Nein votes: {} ; '.format(', '.join(no_votes))
 
-            if yes_votes > no_votes:
+            if len(yes_votes) > len(no_votes):
                 if (
                         self.policies.count('Fascist') >= 3
                         and self.chancellor == self.hitler
@@ -524,8 +526,8 @@ class Game:
         if self.presidential_power:
             self.round_stage = 'Executive Action'
             message += (
-                "New powers have been granted to the president, who must: "
-                "{action}".format(action=self.presidential_power)
+                "New powers have been granted to the president, who must "
+                "perform: {action}".format(action=self.presidential_power)
             )
         else:
             message += 'It is time to elect the next Government! '
@@ -619,11 +621,11 @@ class Game:
                     )
                 ),
             )
-        self.player_ids.pop(player_id)
+        self.player_ids.remove(player_id)
         return (
             "",
             (
-                "The President formally executes {minister}."
+                "The President formally executes {minister}. "
                 "Seances are not allowed in this game, so {minister} "
                 "should not share any useful information until the end "
                 "of the game. ".format(

@@ -1,12 +1,11 @@
-cast_vote(player_id, half negative)
+cast_vote(dead player id, _) - not a sitting minister
 veto
 veto_confirm
-select_policy(in hand, lib) -> passed policy, empty hands, election
 enact_power(target) investigate
-enact_power(target) execute
-enact_power(target) execute hitler
 enact_power(target) call special election
 enact_power(president) call special election
+deck reshuffled
+double check peek (put in some debug logging)
 
 !bebug add_player t1
 !bebug add_player t2

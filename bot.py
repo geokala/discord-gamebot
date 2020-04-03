@@ -692,6 +692,15 @@ async def bebug(ctx, attr, *args):
         await ctx.send(str(getattr(game, attr)(*args)))
 
 
+@CLIENT.command()
+async def bevote(ctx):
+    if ctx.message.author.id == CONFIG['owner_id']:
+        game = await _get_game(ctx, ctx.channel.name)
+        for player in game.player_ids:
+            result = game.cast_vote(player, True)
+        await ctx.send(result)
+
+
 if __name__ == '__main__':
     CONFIG = load_config('config.json')
     CLIENT.run(CONFIG['token'])
