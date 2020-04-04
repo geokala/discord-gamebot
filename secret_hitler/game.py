@@ -200,6 +200,13 @@ class Game:
         state."""
         return self.end_state
 
+    def _set_next_president(self):
+        """Determine who should be the next president."""
+        self.next_president = self.player_ids[
+            (self.player_ids.index(self.president) + 1)
+            % len(self.player_ids)
+        ]
+
     def start_election(self):
         """Start the next round.
         :return: A message indicating that the president should nominate
@@ -217,10 +224,7 @@ class Game:
             else:
                 # First round
                 self.president = random.choice(self.player_ids)
-            self.next_president = self.player_ids[
-                (self.player_ids.index(self.president) + 1)
-                % len(self.player_ids)
-            ]
+            self._set_next_president()
 
         ineligible = [minister for minister in self.term_limited
                       if minister != self.president]
@@ -261,11 +265,14 @@ class Game:
             )
         if player_id not in eligible:
             return (
-                'The previous or current President and the previous '
+                'The {maybe_prev_pres}current President and the previous '
                 'Chancellor are not eligible to become chancellor. '
                 'Eligible Chancellors are: {eligible}'.format(
                     eligible=', '.join([self.name_mappings[minister]
                                         for minister in eligible]),
+                    maybe_prev_pres=(
+                        "previous or " if len(self.player_ids) > 5 else ""
+                    ),
                 )
             )
 
@@ -314,7 +321,10 @@ class Game:
                     return 'Hitler was elected Chancellor, fascists win!'
 
                 message += 'Government formed! '
-                self.term_limited = [self.president, self.chancellor]
+                if len(self.player_ids) > 5:
+                    self.term_limited = [self.president, self.chancellor]
+                else:
+                    self.term_limited = [self.chancellor]
                 message += (
                     'The President must now propose policies to the '
                     'Chancellor.'
@@ -342,6 +352,7 @@ class Game:
             ended = self.assign_policy(policy, skip_power=True)
             if ended:
                 return ended
+            self.term_limited = []
             return (
                 'The country is in chaos! The parliament passes a '
                 'reactionary {policy} policy! {election}'.format(
@@ -621,6 +632,8 @@ class Game:
                     )
                 ),
             )
+        if player_id == self.next_president:
+            self._set_next_president()
         self.player_ids.remove(player_id)
         return (
             "",

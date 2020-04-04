@@ -1,9 +1,7 @@
-cast_vote(dead player id, _) - not a sitting minister
-veto
-veto_confirm
-enact_power(target) investigate
-enact_power(target) call special election
-enact_power(president) call special election
+three vetos -> fail gov
+enact_power(target) execute on player who would be PM next
+term limits != prev president for <= 5 players
+term limits != prev president for <= 5 players after execution
 deck reshuffled
 double check peek (put in some debug logging)
 

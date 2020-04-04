@@ -5,6 +5,7 @@ import random
 
 from discord import Game, DMChannel, TextChannel, utils, ChannelType
 from discord.ext.commands import Bot
+import websockets
 
 from secret_hitler.exceptions import (
     GameAlreadyRunning,
@@ -18,7 +19,6 @@ from secret_hitler.exceptions import (
     PlayerLimitReached,
 )
 from secret_hitler.tracker import GameTracker
-
 
 CLIENT = Bot(command_prefix='!')
 CONFIG = {}
@@ -699,6 +699,17 @@ async def bevote(ctx):
         for player in game.player_ids:
             result = game.cast_vote(player, True)
         await ctx.send(result)
+
+
+@CLIENT.command()
+async def close(ctx):
+    """Disconnect the bot and stop running."""
+    if ctx.author.id == CONFIG['owner_id']:
+        print("Closing by owner's demand.")
+        try:
+            await CLIENT.close()
+        except websockets.exceptions.ConnectionClosedOK:
+            pass
 
 
 if __name__ == '__main__':
