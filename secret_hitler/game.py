@@ -211,6 +211,12 @@ class Game:
         """Start the next round.
         :return: A message indicating that the president should nominate
                  a chancellor."""
+        if self.president:
+            if len(self.player_ids) > 5:
+                self.term_limited = [self.president, self.chancellor]
+            else:
+                self.term_limited = [self.chancellor]
+
         self.chancellor = None
         self.player_votes = {}
         self.presidential_power = None
@@ -321,10 +327,6 @@ class Game:
                     return 'Hitler was elected Chancellor, fascists win!'
 
                 message += 'Government formed! '
-                if len(self.player_ids) > 5:
-                    self.term_limited = [self.president, self.chancellor]
-                else:
-                    self.term_limited = [self.chancellor]
                 message += (
                     'The President must now propose policies to the '
                     'Chancellor.'
@@ -525,12 +527,12 @@ class Game:
             # Nice try.
             policy = self.chancellor_policies[0]
 
+        self.chancellor_policies.remove(policy)
+        self.discard_deck.append(self.chancellor_policies.pop())
+
         ended = self.assign_policy(policy)
         if ended:
             return ended
-
-        self.chancellor_policies.remove(policy)
-        self.discard_deck.append(self.chancellor_policies.pop())
 
         message = 'A {policy} policy was passed! '.format(policy=policy)
 
@@ -609,7 +611,7 @@ class Game:
         :return: The private and public result statements."""
         return (
             "The next three policies are: {}".format(
-                ", ".join(self.policy_deck[:3]),
+                ", ".join(self.policy_deck[-3:]),
             ),
             "The President has been advised on upcoming policies. " +
             self.start_election(),
@@ -632,9 +634,9 @@ class Game:
                     )
                 ),
             )
+        self.player_ids.remove(player_id)
         if player_id == self.next_president:
             self._set_next_president()
-        self.player_ids.remove(player_id)
         return (
             "",
             (
