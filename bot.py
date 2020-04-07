@@ -4,7 +4,7 @@ import json
 import random
 
 from discord import Game
-from discord.ext.commands import Bot
+from discord.ext.commands import Bot, is_owner
 import websockets
 
 CLIENT = Bot(command_prefix='!')
@@ -87,7 +87,7 @@ async def on_ready():
     """Output a message when connected"""
     print("Logged in as " + CLIENT.user.name)
     await CLIENT.change_presence(activity=Game(
-        name="Considering a nice slice of cake...",
+        name="with fire",
     ))
 
 
@@ -98,14 +98,14 @@ async def hello(ctx):
 
 
 @CLIENT.command()
-async def close(ctx):
+@is_owner()
+async def close(_):
     """Disconnect the bot and stop running."""
-    if ctx.author.id == CONFIG['owner_id']:
-        print("Closing by owner's demand.")
-        try:
-            await CLIENT.close()
-        except websockets.exceptions.ConnectionClosedOK:
-            pass
+    print("Closing by owner's demand.")
+    try:
+        await CLIENT.close()
+    except websockets.exceptions.ConnectionClosedOK:
+        pass
 
 
 if __name__ == '__main__':
