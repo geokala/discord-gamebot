@@ -18,6 +18,13 @@ def load_config(path):
 
 
 @CLIENT.command()
+async def rps(ctx):
+    await ctx.send(
+        'You {}'.format(random.choice(['win', 'lose', 'draw']))
+    )
+
+
+@CLIENT.command()
 async def roll(ctx, dice='1d100'):
     """Roll dice"""
     dice_split = dice.split('d')
