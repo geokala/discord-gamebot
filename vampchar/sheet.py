@@ -5,9 +5,6 @@ from copy import deepcopy
 from datetime import datetime
 import json
 
-# TODO: Frontend
-# TODO: No pdf output, give nice output on frontend
-
 
 class Character:
     """Simple CtM character sheet."""
