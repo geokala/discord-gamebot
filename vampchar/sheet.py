@@ -24,17 +24,14 @@ class Character:
             'physical': {
                 'value': 0,
                 'focuses': [],
-                'valid focuses': ['strength', 'dexterity', 'stamina'],
             },
             'social': {
                 'value': 0,
                 'focuses': [],
-                'valid focuses': ['charisma', 'manipulation', 'appearance'],
             },
             'mental': {
                 'value': 0,
                 'focuses': [],
-                'valid focuses': ['intelligence', 'wits', 'perception'],
             },
         }
         self.skills = {}
