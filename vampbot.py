@@ -44,6 +44,7 @@ async def get(ctx):
         SESSION.get_player_json(ctx.message.author.id)
     )
 
+
 @CLIENT.command()
 async def award(ctx, amount, reason):
     """Award XP."""
@@ -54,6 +55,45 @@ async def award(ctx, amount, reason):
     SESSION.award_xp(amount, reason)
     await ctx.send("All characters received {} XP for {}.".format(amount,
                                                                   reason))
+
+
+@CLIENT.command()
+@is_owner()
+async def begin(ctx):
+    """Finish character creation, begin the adventure!"""
+    await ctx.send(SESSION.finish_character_creation())
+
+
+@CLIENT.group('set')
+async def _set(ctx):
+    """Set various character attributes"""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !set with one of these: {}".format(
+            ", ".join([command.name for command in _set.commands])))
+
+
+@_set.command('attribute')
+async def set_attribute(ctx, attribute, value):
+    """Set an attribute to a given value."""
+    try:
+        value = int(value)
+    except ValueError:
+        await ctx.send("You must specify an integer value.")
+    await ctx.send(
+        SESSION.set_attribute(ctx.message.author.id, attribute, value))
+
+
+@CLIENT.command('focus')
+async def add_focus(ctx, attribute, focus):
+    """Add a focus for an attribute."""
+    await ctx.send(SESSION.add_focus(ctx.message.author.id, attribute, focus))
+
+
+@CLIENT.command('unfocus')
+async def remove_focus(ctx, attribute, focus):
+    """Add a focus for an attribute."""
+    await ctx.send(
+        SESSION.remove_focus(ctx.message.author.id, attribute, focus))
 
 
 @CLIENT.event
