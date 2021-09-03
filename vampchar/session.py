@@ -72,6 +72,51 @@ class Session:
             'value'] = value
         return "{} set to {}".format(attribute, value)
 
+    def set_skill(self, player_id, skill, value):
+        """Set a skill to a specified value."""
+        if not self.character_creation:
+            return "Skills can not be set after character creation."
+        char_skills = self.player_characters[player_id].skills
+        if value == 0:
+            if skill not in char_skills:
+                return "Can't remove {} as you don't have that skill.".format(
+                    skill,
+                )
+            char_skills.pop(skill)
+            return "Removed {} skill".format(skill)
+        char_skills[skill] = value
+        return "Set {} to {}".format(skill, value)
+
+    def set_background(self, player_id, background, value):
+        """Set a background to a specified value."""
+        if not self.character_creation:
+            return "Backgrounds can not be set after character creation."
+        char_bgs = self.player_characters[player_id].backgrounds
+        if value == 0:
+            if background not in char_bgs:
+                return (
+                    "Can't remove {} as you don't have that background."
+                ).format(background)
+            char_bgs.pop(background)
+            return "Removed {} background".format(background)
+        char_bgs[background] = value
+        return "Set {} to {}".format(background, value)
+
+    def set_discipline(self, player_id, discipline, value):
+        """Set a discipline to a specified value."""
+        if not self.character_creation:
+            return "Backgrounds can not be set after character creation."
+        char_disciplines = self.player_characters[player_id].disciplines
+        if value == 0:
+            if discipline not in char_disciplines:
+                return (
+                    "Can't remove {} as you don't have that discipline."
+                ).format(discipline)
+            char_disciplines.pop(discipline)
+            return "Removed {} discipline".format(discipline)
+        char_disciplines[discipline] = value
+        return "Set {} to {}".format(discipline, value)
+
     def _validate_attribute(self, player_id, attribute):
         """Complain if an attribute isn't valid."""
         attributes = self.player_characters[player_id].attributes
@@ -81,7 +126,33 @@ class Session:
             ).format(attribute, ','.join(attributes))
         return ""
 
+    def add_note(self, player_id, content):
+        """Add a note to a character."""
+        self.player_characters[player_id].notes.append(content)
+        return "Note added."""
+
+    def list_notes(self, player_id):
+        """List notes on a character."""
+        notes = self.player_characters[player_id].notes
+        if notes:
+            return "Your notes:\n" + "\n".join([
+                '  {}: {}'.format(pos, note)
+                for pos, note in enumerate(notes, start=1)
+            ])
+        return "You have no notes."
+
+    def remove_note(self, player_id, pos):
+        """Remove a note from a character (1-indexed for non-techies)."""
+        notes = self.player_characters[player_id].notes
+        if (pos - 1) < 0 or pos > len(notes):
+            return (
+                "Note {} does not exist, you have {} notes."
+            ).format(pos, len(notes))
+        content = notes.pop(pos - 1)
+        return "Removed note {}: {}".format(pos, content)
+
     def finish_character_creation(self):
+        """End character creation, begin the game proper!"""
         self.character_creation = False
         return "Character creation complete."
 
@@ -89,11 +160,7 @@ class Session:
 # TODO: Modify characters:
 #   add to attribute (using xp)
 #   increase skill (using xp)
-#   set skill
-#   remove skill
 #   increase background (ousing xp)
-#   set background
-#   remove background
 #   add merit (opt: using xp)
 #   remove merit
 #   add flaw
@@ -107,10 +174,6 @@ class Session:
 #   remove agg damage from character (opt: spending blood)
 #   spend blood
 #   gain blood
-#   add note
-#   list notes
-#   remove note
-#   set discipline
 #   increase in-clan discipline (spending xp)
 #   increase out-of-clan discipline (spending xp)
 #   set name

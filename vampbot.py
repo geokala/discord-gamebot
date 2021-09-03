@@ -57,11 +57,52 @@ async def award(ctx, amount, reason):
                                                                   reason))
 
 
+async def _check_int(ctx, value):
+    """Try to cast something as an int, and scream otherwise."""
+    try:
+        return int(value)
+    except ValueError:
+        await ctx.send("You must specify an integer value.")
+        raise
+
+
 @CLIENT.command()
 @is_owner()
 async def begin(ctx):
     """Finish character creation, begin the adventure!"""
     await ctx.send(SESSION.finish_character_creation())
+
+
+# TODO: Organise groups of commands better; allow partial non-ambiguous command matching
+@CLIENT.group('notes')
+async def notes(ctx):
+    """Deal with notes on a character sheet."""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !notes with one of these: {}".format(
+            ", ".join([command.name for command in notes.commands])))
+
+
+@notes.group('add')
+async def add_note(ctx, *content):
+    """Add a note to a character."""
+    content = ' '.join(content)
+    await ctx.send(
+        SESSION.add_note(ctx.message.author.id, content))
+
+
+@notes.group('list')
+async def list_notes(ctx):
+    """List notes for a character."""
+    await ctx.send(
+        SESSION.list_notes(ctx.message.author.id))
+
+
+@notes.group('delete')
+async def delete_note(ctx, pos):
+    """Delete note for a character."""
+    pos = await _check_int(ctx, pos)
+    await ctx.send(
+        SESSION.remove_note(ctx.message.author.id, pos))
 
 
 @CLIENT.group('set')
@@ -75,12 +116,33 @@ async def _set(ctx):
 @_set.command('attribute')
 async def set_attribute(ctx, attribute, value):
     """Set an attribute to a given value."""
-    try:
-        value = int(value)
-    except ValueError:
-        await ctx.send("You must specify an integer value.")
+    value = await _check_int(ctx, value)
     await ctx.send(
         SESSION.set_attribute(ctx.message.author.id, attribute, value))
+
+
+@_set.command('skill')
+async def set_skill(ctx, skill, value):
+    """Set a skill to a given value."""
+    value = await _check_int(ctx, value)
+    await ctx.send(
+        SESSION.set_skill(ctx.message.author.id, skill, value))
+
+
+@_set.command('background')
+async def set_background(ctx, background, value):
+    """Set a background to a given value."""
+    value = await _check_int(ctx, value)
+    await ctx.send(
+        SESSION.set_background(ctx.message.author.id, background, value))
+
+
+@_set.command('discipline')
+async def set_discipline(ctx, discipline, value):
+    """Set a discipline to a given value."""
+    value = await _check_int(ctx, value)
+    await ctx.send(
+        SESSION.set_discipline(ctx.message.author.id, discipline, value))
 
 
 @CLIENT.command('focus')

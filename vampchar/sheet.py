@@ -60,7 +60,7 @@ class Character:
             'incapacitated': 3,
         }
         self.damage_taken = 0
-        self.notes = {}
+        self.notes = []
         self.status = []
         self.equipment = []
 
@@ -222,17 +222,14 @@ _BASE_EXPECTED = {
         'physical': {
             'value': 0,
             'focuses': [],
-            'valid focuses': ['strength', 'dexterity', 'stamina'],
         },
         'social': {
             'value': 0,
             'focuses': [],
-            'valid focuses': ['charisma', 'manipulation', 'appearance'],
         },
         'mental': {
             'value': 0,
             'focuses': [],
-            'valid focuses': ['intelligence', 'wits', 'perception'],
         },
     },
     'skills': {},
@@ -269,7 +266,7 @@ _BASE_EXPECTED = {
         'status': [],
     },
     'equipment': [],
-    'notes': {},
+    'notes': [],
 }
 
 
