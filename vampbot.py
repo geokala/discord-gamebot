@@ -7,7 +7,7 @@ from discord import Game
 from discord.ext.commands import Bot, is_owner
 import websockets
 
-from vampchar.session import Session
+from vampchar.session import BadInput, Session
 
 CLIENT = Bot(command_prefix='!')
 CONFIG = {}
@@ -45,32 +45,24 @@ async def get(ctx):
     )
 
 
+async def _call_session_and_output(ctx, command, *args, **kwargs):
+    """Call a session command and output the result."""
+    try:
+        await ctx.send(command(*args, **kwargs))
+    except BadInput as err:
+        await ctx.send(str(err))
+
+
 @CLIENT.command()
 async def award(ctx, amount, reason):
     """Award XP."""
-    try:
-        amount = int(amount)
-    except ValueError:
-        await ctx.send("You must specify an integer XP award.")
-    SESSION.award_xp(amount, reason)
-    await ctx.send("All characters received {} XP for {}.".format(amount,
-                                                                  reason))
-
-
-async def _check_int(ctx, value):
-    """Try to cast something as an int, and scream otherwise."""
-    try:
-        return int(value)
-    except ValueError:
-        await ctx.send("You must specify an integer value.")
-        raise
-
+    await _call_session_and_output(ctx, SESSION.award_xp, amount, reason)
 
 @CLIENT.command()
 @is_owner()
 async def begin(ctx):
     """Finish character creation, begin the adventure!"""
-    await ctx.send(SESSION.finish_character_creation())
+    await _call_session_and_output(ctx, SESSION.finish_character_creation)
 
 
 # TODO: Organise groups of commands better; allow partial non-ambiguous command matching
@@ -86,23 +78,22 @@ async def notes(ctx):
 async def add_note(ctx, *content):
     """Add a note to a character."""
     content = ' '.join(content)
-    await ctx.send(
-        SESSION.add_note(ctx.message.author.id, content))
+    await _call_session_and_output(ctx, SESSION.add_note,
+                                   ctx.message.author.id, content)
 
 
 @notes.group('list')
 async def list_notes(ctx):
     """List notes for a character."""
-    await ctx.send(
-        SESSION.list_notes(ctx.message.author.id))
+    await _call_session_and_output(ctx, SESSION.list_notes,
+                                   ctx.message.author.id)
 
 
 @notes.group('delete')
 async def delete_note(ctx, pos):
     """Delete note for a character."""
-    pos = await _check_int(ctx, pos)
-    await ctx.send(
-        SESSION.remove_note(ctx.message.author.id, pos))
+    await _call_session_and_output(ctx, SESSION.remove_note,
+                                   ctx.message.author.id, pos)
 
 
 @CLIENT.group('set')
@@ -116,46 +107,58 @@ async def _set(ctx):
 @_set.command('attribute')
 async def set_attribute(ctx, attribute, value):
     """Set an attribute to a given value."""
-    value = await _check_int(ctx, value)
-    await ctx.send(
-        SESSION.set_attribute(ctx.message.author.id, attribute, value))
+    await _call_session_and_output(ctx, SESSION.set_attribute,
+                                   ctx.message.author.id, attribute, value)
 
 
 @_set.command('skill')
 async def set_skill(ctx, skill, value):
     """Set a skill to a given value."""
-    value = await _check_int(ctx, value)
-    await ctx.send(
-        SESSION.set_skill(ctx.message.author.id, skill, value))
+    await _call_session_and_output(ctx, SESSION.set_skill,
+                                   ctx.message.author.id, skill, value)
 
 
 @_set.command('background')
 async def set_background(ctx, background, value):
     """Set a background to a given value."""
-    value = await _check_int(ctx, value)
-    await ctx.send(
-        SESSION.set_background(ctx.message.author.id, background, value))
+    await _call_session_and_output(ctx, SESSION.set_background,
+                                   ctx.message.author.id, background, value)
 
 
 @_set.command('discipline')
 async def set_discipline(ctx, discipline, value):
     """Set a discipline to a given value."""
-    value = await _check_int(ctx, value)
-    await ctx.send(
-        SESSION.set_discipline(ctx.message.author.id, discipline, value))
+    await _call_session_and_output(ctx, SESSION.set_discipline,
+                                   ctx.message.author.id, discipline, value)
+
+
+@CLIENT.group('buy')
+async def buy(ctx):
+    """Deal with buying things for xp on a character sheet."""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !buy with one of these: {}".format(
+            ", ".join([command.name for command in buy.commands])))
+
+
+@buy.command('attribute')
+async def buy_attribute(ctx, attribute):
+    """Buy an extra point in an attribute."""
+    await _call_session_and_output(ctx, SESSION.increase_attribute,
+                                   ctx.message.author.id, attribute)
 
 
 @CLIENT.command('focus')
 async def add_focus(ctx, attribute, focus):
     """Add a focus for an attribute."""
-    await ctx.send(SESSION.add_focus(ctx.message.author.id, attribute, focus))
+    await _call_session_and_output(ctx, SESSION.add_focus,
+                                   ctx.message.author.id, attribute, focus)
 
 
 @CLIENT.command('unfocus')
 async def remove_focus(ctx, attribute, focus):
     """Add a focus for an attribute."""
-    await ctx.send(
-        SESSION.remove_focus(ctx.message.author.id, attribute, focus))
+    await _call_session_and_output(ctx, SESSION.remove_focus,
+                                   ctx.message.author.id, attribute, focus)
 
 
 @CLIENT.event
