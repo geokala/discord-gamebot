@@ -97,7 +97,13 @@ class Character:
 
     def get_xp_costs(self):
         """Return a dict of XP costs for this character."""
-        generation = self.backgrounds.get('generation', 1)
+        if all(gen in self.backgrounds for gen in
+               ('generation', 'Generation')):
+            raise RuntimeError('Generation set multiple times.')
+        generation = (
+            self.backgrounds.get('generation')
+            or self.backgrounds.get('Generation', 1)
+        )
 
         xp_costs = {
             'Attribute': 3,
@@ -369,30 +375,42 @@ def _test_xp_costs():
     }
     char = Character()
 
-    char.backgrounds['generation'] = 1
+    char.backgrounds['Generation'] = 1
     assert char.get_xp_costs() == exp
 
+    char.backgrounds.pop('Generation')
     char.backgrounds['generation'] = 2
     exp['Background'] = 'new level x 2'
     exp['Skill'] = 'new level x 2'
     assert char.get_xp_costs() == exp
 
-    char.backgrounds['generation'] = 3
+    char.backgrounds.pop('generation')
+    char.backgrounds['Generation'] = 3
     exp['Technique'] = 20
     exp['In-clan elder power'] = '(max one in/out-of-clan elder power) 18'
     exp['Out-of-clan elder power'] = '(max one in/out-of-clan elder power) 24'
     assert char.get_xp_costs() == exp
 
+    char.backgrounds.pop('Generation')
     char.backgrounds['generation'] = 4
     exp['Technique'] = 'Not allowed'
     exp['In-clan elder power'] = 18
     exp['Out-of-clan elder power'] = 24
     assert char.get_xp_costs() == exp
 
-    char.backgrounds['generation'] = 5
+    char.backgrounds.pop('generation')
+    char.backgrounds['Generation'] = 5
     exp['Out-of-clan elder power'] = 30
     exp['Out-of-clan discipline'] = 'new level x 5'
     assert char.get_xp_costs() == exp
+
+    
+    char.backgrounds['generation'] = 4
+    try:
+        char.get_xp_costs()
+        assert False
+    except RuntimeError as err:
+        assert 'Generation set multiple times.' in str(err)
     print(' OK.')
 
 
