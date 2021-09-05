@@ -220,6 +220,40 @@ class Session:
         character.spend_xp(cost, message)
         return message
 
+    def _get_correct_case_entry(self, entry, current_list):  # pylint: disable=R0201
+        """Normalise skill/discipline/background increases using an existing
+        skill/discipline/background entry if it exists with a different case.
+        """
+        for current_value in current_list:
+            if entry.lower() == current_value.lower():
+                return current_value
+        return entry
+
+    def increase_skill(self, player_id, skill, exceed_maximum=False):
+        """Increase a skill using xp."""
+        self._check_generation_is_set(player_id)
+        character = self.player_characters[player_id]
+        skill = self._get_correct_case_entry(skill, character.skills)
+        current_level = character.skills.get(skill, 0)
+
+        cost_multiplier = int(
+            character.get_xp_costs()['Skill'].split('x ')[1]
+        )
+        cost = (current_level + 1) * cost_multiplier
+        self._check_xp_available(player_id, cost)
+
+        if current_level == 5 and not exceed_maximum:
+            raise BadInput(
+                "You already have 5 points in this skill. "
+                "This is the maximum unless you have a merit allowing more."
+            )
+        character.skills[skill] = current_level + 1
+        message = "Raised {} to {}".format(
+            skill, character.skills[skill],
+        )
+        character.spend_xp(cost, message)
+        return message + " for {} XP".format(cost)
+
     def finish_character_creation(self):
         """End character creation, begin the game proper!"""
         self.character_creation = False
@@ -228,7 +262,6 @@ class Session:
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
 #   Switch other input errors from return to raise BadInput
-#   increase skill (using xp)
 #   increase background (ousing xp)
 #   add merit (opt: using xp)
 #   remove merit
