@@ -33,7 +33,7 @@ async def join(ctx):
     """Join the game, creating a character."""
     await _call_session_and_output(
         ctx, SESSION.add_player,
-        ctx.message.author.display_name, ctx.message.author.id,
+        ctx.message.author.id, ctx.message.author.display_name,
     )
 
 
