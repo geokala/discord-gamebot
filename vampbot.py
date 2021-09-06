@@ -31,18 +31,17 @@ async def rps(ctx):
 @CLIENT.command()
 async def join(ctx):
     """Join the game, creating a character."""
-    player_name = ctx.message.author.display_name
-    player_id = ctx.message.author.id
-
-    await ctx.send(SESSION.add_player(player_id, player_name))
+    await _call_session_and_output(
+        ctx, SESSION.add_player,
+        ctx.message.author.display_name, ctx.message.author.id,
+    )
 
 
 @CLIENT.command()
 async def get(ctx):
     """Get the character sheet."""
-    await ctx.send(
-        SESSION.get_player_json(ctx.message.author.id)
-    )
+    await _call_session_and_output(
+        ctx, SESSION.get_player_json, ctx.message.author.id)
 
 
 async def _call_session_and_output(ctx, command, *args, **kwargs):
@@ -148,7 +147,7 @@ async def buy_attribute(ctx, attribute):
 
 
 @buy.command('skill')
-async def buy_attribute(ctx, skill):
+async def buy_skill(ctx, skill):
     """Buy an extra point in a skill."""
     await _call_session_and_output(ctx, SESSION.increase_skill,
                                    ctx.message.author.id, skill)

@@ -22,7 +22,7 @@ class Session:
     def add_player(self, player_id, player_name):
         """Add a player to the game."""
         if player_id in self.player_characters:
-            return "{} has already joined.".format(player_name)
+            raise BadInput("{} has already joined.".format(player_name))
         self.player_characters[player_id] = Character()
         self.player_characters[player_id].player = player_name
         return "Added {}.".format(player_name)
@@ -43,20 +43,22 @@ class Session:
     def add_focus(self, player_id, attribute, focus):
         """Add a focus on a given attribute."""
         if not self.character_creation:
-            return "Focuses cannot be added after character creation."
+            raise BadInput(
+                "Focuses cannot be added after character creation.")
         self._validate_attribute(player_id, attribute)
         attributes = self.player_characters[player_id].attributes
         if focus in attributes[attribute]['focuses']:
-            return "You already have focus {} in attribute {}".format(
+            raise BadInput("You already have focus {} in attribute {}".format(
                 focus, attribute,
-            )
+            ))
         attributes[attribute]['focuses'].append(focus)
         return "Added {} to {} focuses.".format(focus, attribute)
 
     def remove_focus(self, player_id, attribute, focus):
         """Remove a focus from a given attribute."""
         if not self.character_creation:
-            return "Focuses cannot be removed after character creation."
+            raise BadInput(
+                "Focuses cannot be removed after character creation.")
         self._validate_attribute(player_id, attribute)
         attributes = self.player_characters[player_id].attributes
         if focus not in attributes[attribute]['focuses']:
@@ -69,7 +71,8 @@ class Session:
     def set_attribute(self, player_id, attribute, value):
         """Set an attribute to a specified value."""
         if not self.character_creation:
-            return "Attributes can not be set after character creation."
+            raise BadInput(
+                "Attributes can not be set after character creation.")
         self._validate_attribute(player_id, attribute)
         value = self._check_int(value)
         self.player_characters[player_id].attributes[attribute][
@@ -79,13 +82,15 @@ class Session:
     def set_skill(self, player_id, skill, value):
         """Set a skill to a specified value."""
         if not self.character_creation:
-            return "Skills can not be set after character creation."
+            raise BadInput("Skills can not be set after character creation.")
         value = self._check_int(value)
         char_skills = self.player_characters[player_id].skills
         if value == 0:
             if skill not in char_skills:
-                return "Can't remove {} as you don't have that skill.".format(
-                    skill,
+                raise BadInput(
+                    "Can't remove {}- you don't have that skill.".format(
+                        skill,
+                    )
                 )
             char_skills.pop(skill)
             return "Removed {} skill".format(skill)
@@ -95,14 +100,17 @@ class Session:
     def set_background(self, player_id, background, value):
         """Set a background to a specified value."""
         if not self.character_creation:
-            return "Backgrounds can not be set after character creation."
+            raise BadInput(
+                "Backgrounds can not be set after character creation.")
         value = self._check_int(value)
         char_bgs = self.player_characters[player_id].backgrounds
         if value == 0:
             if background not in char_bgs:
-                return (
-                    "Can't remove {} as you don't have that background."
-                ).format(background)
+                raise BadInput(
+                    "Can't remove {}- you don't have that background.".format(
+                        background,
+                    )
+                )
             char_bgs.pop(background)
             return "Removed {} background".format(background)
         char_bgs[background] = value
@@ -116,9 +124,11 @@ class Session:
         char_disciplines = self.player_characters[player_id].disciplines
         if value == 0:
             if discipline not in char_disciplines:
-                return (
-                    "Can't remove {} as you don't have that discipline."
-                ).format(discipline)
+                raise BadInput (
+                    "Can't remove {}- you don't have that discipline.".format(
+                        discipline,
+                    )
+                )
             char_disciplines.pop(discipline)
             return "Removed {} discipline".format(discipline)
         char_disciplines[discipline] = value
@@ -182,9 +192,11 @@ class Session:
         pos = self._check_int(pos)
         notes = self.player_characters[player_id].notes
         if (pos - 1) < 0 or pos > len(notes):
-            return (
-                "Note {} does not exist, you have {} notes."
-            ).format(pos, len(notes))
+            raise BadInput(
+                "Note {} does not exist, you have {} notes.".format(
+                    pos, len(notes)
+                )
+            )
         content = notes.pop(pos - 1)
         return "Removed note {}: {}".format(pos, content)
 
@@ -193,7 +205,7 @@ class Session:
         self._validate_attribute(player_id, attribute)
         self._check_generation_is_set(player_id)
         character = self.player_characters[player_id]
-        
+
         cost = character.get_xp_costs()['Attribute']
         self._check_xp_available(player_id, cost)
 
@@ -261,7 +273,6 @@ class Session:
 
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
-#   Switch other input errors from return to raise BadInput
 #   increase background (ousing xp)
 #   add merit (opt: using xp)
 #   remove merit
