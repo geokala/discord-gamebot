@@ -266,6 +266,39 @@ class Session:
         character.spend_xp(cost, message)
         return message + " for {} XP".format(cost)
 
+    def increase_background(self, player_id, background):
+        """Increase a background using xp."""
+        self._check_generation_is_set(player_id)
+        character = self.player_characters[player_id]
+        background = self._get_correct_case_entry(
+            background, character.backgrounds)
+
+        if background.lower() == 'generation':
+            raise BadInput(
+                "You can't buy generation improvements with XP, only by "
+                "mercilessly draining the soul of someone stronger than "
+                "you. You monster."
+            )
+
+        current_level = character.backgrounds.get(background, 0)
+
+        cost_multiplier = int(
+            character.get_xp_costs()['Background'].split('x ')[1]
+        )
+        cost = (current_level + 1) * cost_multiplier
+        self._check_xp_available(player_id, cost)
+
+        if current_level == 5:
+            raise BadInput(
+                "You already have 5 points in this background."
+            )
+        character.backgrounds[background] = current_level + 1
+        message = "Raised {} to {}".format(
+            background, character.backgrounds[background],
+        )
+        character.spend_xp(cost, message)
+        return message + " for {} XP".format(cost)
+
     def finish_character_creation(self):
         """End character creation, begin the game proper!"""
         self.character_creation = False
@@ -273,7 +306,6 @@ class Session:
 
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
-#   increase background (ousing xp)
 #   add merit (opt: using xp)
 #   remove merit
 #   add flaw

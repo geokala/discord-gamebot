@@ -161,6 +161,13 @@ async def buy_exceptional_skill(ctx, skill):
                                    exceed_maximum=True)
 
 
+@buy.command('background')
+async def buy_background(ctx, background):
+    """Buy an extra point in a background."""
+    await _call_session_and_output(ctx, SESSION.increase_background,
+                                   ctx.message.author.id, background)
+
+
 @CLIENT.command('focus')
 async def add_focus(ctx, attribute, focus):
     """Add a focus for an attribute."""
