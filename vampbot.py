@@ -152,7 +152,13 @@ async def buy_skill(ctx, skill):
     await _call_session_and_output(ctx, SESSION.increase_skill,
                                    ctx.message.author.id, skill)
 
-# TODO: buy_exceptional_attribute- same as buy_attribute, but with exceed_maximum=True
+
+@buy.command('exceptional')
+async def buy_exceptional_skill(ctx, skill):
+    """Buy an extra point (including beyond 5) in a skill."""
+    await _call_session_and_output(ctx, SESSION.increase_skill,
+                                   ctx.message.author.id, skill,
+                                   exceed_maximum=True)
 
 
 @CLIENT.command('focus')
