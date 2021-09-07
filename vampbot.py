@@ -131,6 +131,13 @@ async def set_discipline(ctx, discipline, value):
                                    ctx.message.author.id, discipline, value)
 
 
+@_set.command('clan')
+async def set_clan(ctx, *clan_name):
+    """Set a character's clan membership."""
+    await _call_session_and_output(ctx, SESSION.set_clan,
+                                   ctx.message.author.id, ' '.join(clan_name))
+
+
 @CLIENT.group('buy')
 async def buy(ctx):
     """Deal with buying things for xp on a character sheet."""
@@ -180,6 +187,37 @@ async def buy_merit(ctx, *args):
         await _call_session_and_output(ctx, SESSION.add_merit,
                                        ctx.message.author.id,
                                        merit_name, cost)
+
+
+@CLIENT.group('inflict')
+async def inflict(ctx):
+    """Deal with inflicting ailments on a character."""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !inflict with one of these: {}".format(
+            ", ".join([command.name for command in inflict.commands])))
+
+
+@inflict.command('flaw')
+async def inflict_flaw(ctx, *args):
+    """Inflict a flaw."""
+    if len(args) < 2:
+        await ctx.send(
+            'Expected a flaw name followed by an integer for value.')
+    else:
+        flaw_name = ' '.join(args[:-1])
+        value = args[-1]
+        await _call_session_and_output(ctx, SESSION.add_flaw,
+                                       ctx.message.author.id,
+                                       flaw_name, value)
+
+
+@inflict.command('derangement')
+async def inflict_derangement(ctx, *args):
+    """Inflict a derangement."""
+    derangement = ' '.join(args)
+    await _call_session_and_output(ctx, SESSION.add_derangement,
+                                   ctx.message.author.id,
+                                   derangement)
 
 
 @CLIENT.command('focus')

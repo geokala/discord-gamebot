@@ -6,7 +6,7 @@ class BadInput(Exception):
     """Raised when bad input is supplied by the frontend."""
 
 
-class Session:
+class Session: # pylint: disable=R0904
     """Vampire session manager."""
     player_characters = {}
     character_creation = True
@@ -200,6 +200,14 @@ class Session:
         content = notes.pop(pos - 1)
         return "Removed note {}: {}".format(pos, content)
 
+    def set_clan(self, player_id, clan):
+        """Set a character's clan."""
+        character = self.player_characters[player_id]
+        if character.clan:
+            raise BadInput("Your clan has already been set.")
+        character.clan = clan
+        return "Clan set to {}".format(clan)
+
     def increase_attribute(self, player_id, attribute):
         """Spend XP to increase an attribute on a character."""
         self._validate_attribute(player_id, attribute)
@@ -321,6 +329,77 @@ class Session:
         character.merits[merit_name] = cost
         return "Added merit {} with cost {}".format(merit_name, cost)
 
+    def add_flaw(self, player_id, flaw_name, value):
+        """Add a flaw to the character.
+        During character creation there are a maximum of seven points of
+        flaws and derangements and they award bonus XP.
+        Later on, they do not award bonus XP, and have no limit."""
+        character = self.player_characters[player_id]
+        value = self._check_int(value)
+
+        if flaw_name.lower() in [item.lower() for item in character.flaws]:
+            raise BadInput('You already have the flaw {}'.format(flaw_name))
+
+        if self.character_creation:
+            self._check_flaws_and_derangements_limit(player_id, value)
+            character.flaws[flaw_name] = value
+            character.award_xp(value, "Took flaw: {}".format(flaw_name))
+            return "Added flaw {} with value {} and gained XP.".format(
+                flaw_name, value,
+            )
+        character.flaws[flaw_name] = value
+        return "Inflicted flaw {} with value {}.".format(flaw_name, value)
+
+    def add_derangement(self, player_id, derangement):
+        """Add a derangement to the character.
+        During character creation there are a maximum of seven points of
+        flaws and derangements and they award bonus XP.
+        Later on, they do not award bonus XP, and have no limit."""
+        character = self.player_characters[player_id]
+
+        if derangement.lower() in [item.lower()
+                                   for item in character.derangements]:
+            raise BadInput('You already have the derangement {}'.format(
+                derangement))
+
+        if self.character_creation:
+            is_malkavian = character.clan.lower() == 'malkavian'
+            value = 2
+            if is_malkavian and len(character.derangements) == 0:
+                value = 0
+            self._check_flaws_and_derangements_limit(player_id, value)
+            character.derangements.append(derangement)
+            if value:
+                character.award_xp(value, "Took derangement: {}".format(
+                                   derangement))
+                return "Added derangement {} for 2XP".format(derangement)
+            return "Added derangement {} for Malkav's madness".format(
+                derangement)
+        character.derangements.append(derangement)
+        return "Inflicted derangement {}".format(derangement)
+
+    def _check_flaws_and_derangements_limit(self, player_id, value):
+        """Check flaws/derangements limit will not be exceeded."""
+        character = self.player_characters[player_id]
+        if not character.clan:
+            raise BadInput(
+                "You must set your clan before adding derangements or flaws.")
+        is_malkavian = character.clan.lower() == 'malkavian'
+        current_flaws_total = sum(character.flaws.values())
+        derangement_count = len(character.derangements)
+        if is_malkavian:
+            derangement_count = max(0, derangement_count - 1)
+        current_flaws_total += (2 * derangement_count)
+        if current_flaws_total + value > 7:
+            raise BadInput(
+                'You may have at most 7 points of flaws and '
+                'derangements. You have {current} and are trying to add '
+                '{new}, which would exceed 7.'.format(
+                    current=current_flaws_total,
+                    new=value,
+                )
+            )
+
     def finish_character_creation(self):
         """End character creation, begin the game proper!"""
         self.character_creation = False
@@ -329,9 +408,7 @@ class Session:
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
 #   remove merit
-#   add flaw
 #   remove flaw (opt: using xp)
-#   add derangement
 #   spend willpower
 #   restore willpower to all characters
 #   add beast traits to character
@@ -343,4 +420,4 @@ class Session:
 #   increase in-clan discipline (spending xp)
 #   increase out-of-clan discipline (spending xp)
 #   set name
-#   set clan
+#   undo
