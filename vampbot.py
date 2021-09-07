@@ -168,6 +168,20 @@ async def buy_background(ctx, background):
                                    ctx.message.author.id, background)
 
 
+@buy.command('merit')
+async def buy_merit(ctx, *args):
+    """Add a merit."""
+    if len(args) < 2:
+        await ctx.send(
+            'Expected a merit name followed by an integer for cost.')
+    else:
+        merit_name = ' '.join(args[:-1])
+        cost = args[-1]
+        await _call_session_and_output(ctx, SESSION.add_merit,
+                                       ctx.message.author.id,
+                                       merit_name, cost)
+
+
 @CLIENT.command('focus')
 async def add_focus(ctx, attribute, focus):
     """Add a focus for an attribute."""

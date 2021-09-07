@@ -299,6 +299,28 @@ class Session:
         character.spend_xp(cost, message)
         return message + " for {} XP".format(cost)
 
+    def add_merit(self, player_id, merit_name, cost):
+        """Add a merit to a character."""
+        character = self.player_characters[player_id]
+        cost = self._check_int(cost)
+
+        if merit_name.lower() in [item.lower() for item in character.merits]:
+            raise BadInput('You already have the merit {}'.format(merit_name))
+
+        current_merits_total = sum(character.merits.values())
+
+        if current_merits_total + cost > 7:
+            raise BadInput(
+                'You may have at most 7 points of merits. You have {current} '
+                'and are trying to add {new}, which would exceed 7.'.format(
+                    current=current_merits_total,
+                    new=cost,
+                )
+            )
+
+        character.merits[merit_name] = cost
+        return "Added merit {} with cost {}".format(merit_name, cost)
+
     def finish_character_creation(self):
         """End character creation, begin the game proper!"""
         self.character_creation = False
@@ -306,7 +328,6 @@ class Session:
 
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
-#   add merit (opt: using xp)
 #   remove merit
 #   add flaw
 #   remove flaw (opt: using xp)
