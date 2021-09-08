@@ -400,6 +400,70 @@ class Session: # pylint: disable=R0904
                 )
             )
 
+    def remove_merit(self, player_id, merit):
+        """Remove a merit."""
+        character = self.player_characters[player_id]
+        merit = self._get_correct_case_entry(merit, character.merits)
+
+        try:
+            value = character.merits.pop(merit)
+            if self.character_creation:
+                character.experience['current'] += value
+                return "Removed {} and refunded {} XP".format(merit, value)
+            return "Removed {}".format(merit)
+        except KeyError:
+            raise BadInput(  # pylint: disable=W0707
+                'You did not have the merit {}'.format(merit)
+            )
+
+    def remove_flaw(self, player_id, flaw):
+        """Remove or buy-off a flaw."""
+        character = self.player_characters[player_id]
+        flaw = self._get_correct_case_entry(flaw, character.flaws)
+
+        if flaw not in character.flaws:
+            raise BadInput("You did not have the flaw {}".format(flaw))
+
+        message = "Removed flaw {}".format(flaw)
+        value = character.flaws[flaw]
+        if self.character_creation:
+            character.flaws.pop(flaw)
+            character.experience['current'] -= value
+            character.experience['total'] -= value
+            return message + ' removing {} XP'.format(value)
+        self._check_xp_available(player_id, value)
+        character.flaws.pop(flaw)
+        character.spend_xp(value, message)
+        return message + " for {} XP".format(value)
+
+    def remove_derangement(self, player_id, derangement):
+        """Remove or buy-off a derangement."""
+        character = self.player_characters[player_id]
+        derangement = self._get_correct_case_entry(
+            derangement, character.derangements)
+
+        if derangement not in character.derangements:
+            raise BadInput("You did not have the derangement {}".format(
+                derangement))
+
+        if (
+            character.clan.lower() == 'malkavian'
+            and len(character.derangements) == 1
+        ):
+            raise BadInput("You cannot be any less deranged as a Malkavian.")
+
+        message = "Removed derangement {}".format(derangement)
+        value = 2
+        if self.character_creation:
+            character.derangements.remove(derangement)
+            character.experience['current'] -= value
+            character.experience['total'] -= value
+            return message + ' removing {} XP'.format(value)
+        self._check_xp_available(player_id, value)
+        character.derangements.remove(derangement)
+        character.spend_xp(value, message)
+        return message + ' for {} XP'.format(value)
+
     def finish_character_creation(self):
         """End character creation, begin the game proper!"""
         self.character_creation = False
@@ -407,8 +471,6 @@ class Session: # pylint: disable=R0904
 
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
-#   remove merit
-#   remove flaw (opt: using xp)
 #   spend willpower
 #   restore willpower to all characters
 #   add beast traits to character

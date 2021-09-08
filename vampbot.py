@@ -220,6 +220,46 @@ async def inflict_derangement(ctx, *args):
                                    derangement)
 
 
+@CLIENT.group('remove')
+async def remove(ctx):
+    """Deal with removing things for xp on a character sheet."""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !remove with one of these: {}".format(
+            ", ".join([command.name for command in remove.commands])))
+
+
+@remove.command('merit')
+async def remove_merit(ctx, *merit_name):
+    """Remove a merit from a character.
+    Refund the cost if during character creation.
+    """
+    merit_name = ' '.join(merit_name)
+    await _call_session_and_output(ctx, SESSION.remove_merit,
+                                   ctx.message.author.id, merit_name)
+
+
+@remove.command('flaw')
+async def remove_flaw(ctx, *flaw_name):
+    """Remove a flaw from a character.
+    Remove the bonus XP if done during character creation.
+    Spend XP after character creation.
+    """
+    flaw_name = ' '.join(flaw_name)
+    await _call_session_and_output(ctx, SESSION.remove_flaw,
+                                   ctx.message.author.id, flaw_name)
+
+
+@remove.command('derangement')
+async def remove_derangement(ctx, *derangement_name):
+    """Remove a derangement from a character.
+    Remove the bonus XP if done during character creation.
+    Spend XP after character creation.
+    """
+    derangement_name = ' '.join(derangement_name)
+    await _call_session_and_output(ctx, SESSION.remove_derangement,
+                                   ctx.message.author.id, derangement_name)
+
+
 @CLIENT.command('focus')
 async def add_focus(ctx, attribute, focus):
     """Add a focus for an attribute."""
