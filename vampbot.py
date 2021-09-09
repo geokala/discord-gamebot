@@ -274,6 +274,28 @@ async def remove_focus(ctx, attribute, focus):
                                    ctx.message.author.id, attribute, focus)
 
 
+@CLIENT.group('spend')
+async def spend(ctx):
+    """Spend resources."""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !spend with one of these: {}".format(
+            ", ".join([command.name for command in spend.commands])))
+
+
+@spend.command('willpower')
+async def spend_willpower(ctx, amount=1):
+    """Spend some blood."""
+    await _call_session_and_output(ctx, SESSION.spend_willpower,
+                                   ctx.message.author.id, amount)
+
+
+@spend.command('blood')
+async def spend_blood(ctx, amount=1):
+    """Spend some blood."""
+    await _call_session_and_output(ctx, SESSION.spend_blood,
+                                   ctx.message.author.id, amount)
+
+
 @CLIENT.event
 async def on_ready():
     """Output a message when connected"""

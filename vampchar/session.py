@@ -114,6 +114,17 @@ class Session: # pylint: disable=R0904
             char_bgs.pop(background)
             return "Removed {} background".format(background)
         char_bgs[background] = value
+        if background.lower() == 'generation':
+            max_blood, blood_rate = {
+                1: (10, 1),
+                2: (12, 2),
+                3: (15, 3),
+                4: (20, 4),
+                5: (30, 5),
+            }[value]
+            self.player_characters[player_id].blood['max'] = max_blood
+            self.player_characters[player_id].blood['current'] = max_blood
+            self.player_characters[player_id].blood['rate'] = blood_rate
         return "Set {} to {}".format(background, value)
 
     def set_discipline(self, player_id, discipline, value):
@@ -464,6 +475,32 @@ class Session: # pylint: disable=R0904
         character.spend_xp(value, message)
         return message + ' for {} XP'.format(value)
 
+    def spend_willpower(self, player_id, amount):
+        """Spend some willpower."""
+        return self._spend_resource('willpower', player_id, amount)
+
+    def spend_blood(self, player_id, amount):
+        """Spend some blood."""
+        return self._spend_resource('blood', player_id, amount)
+
+    def _spend_resource(self, resource_type, player_id, amount):
+        character = self.player_characters[player_id]
+        resource = {
+            'blood': character.blood,
+            'willpower': character.willpower,
+        }[resource_type]
+        amount = self._check_int(amount)
+        if resource['current'] < amount:
+            raise BadInput(
+                'You cannot spend {} {}, you only have {}'.format(
+                    amount, resource_type, resource['current'],
+                )
+            )
+        resource['current'] -= amount
+        return "You spent {} {} and have {} remaining.".format(
+            amount, resource_type, resource['current'],
+        )
+
     def finish_character_creation(self):
         """End character creation, begin the game proper!"""
         self.character_creation = False
@@ -471,13 +508,11 @@ class Session: # pylint: disable=R0904
 
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
-#   spend willpower
 #   restore willpower to all characters
 #   add beast traits to character
 #   add damage to character
 #   remove normal damage from character (opt: spending blood)
 #   remove agg damage from character (opt: spending blood)
-#   spend blood
 #   gain blood
 #   increase in-clan discipline (spending xp)
 #   increase out-of-clan discipline (spending xp)

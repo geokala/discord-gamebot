@@ -47,7 +47,7 @@ class Character:
         }
         self.willpower = {
             'max': 6,
-            'current': 0,
+            'current': 6,
         }
         self.morality = {
             'max': 5,
