@@ -260,6 +260,13 @@ async def remove_derangement(ctx, *derangement_name):
                                    ctx.message.author.id, derangement_name)
 
 
+@remove.command('beast')
+async def remove_beast_traits(ctx, amount=1):
+    """Remove some beast traits."""
+    await _call_session_and_output(ctx, SESSION.remove_beast_traits,
+                                   ctx.message.author.id, amount)
+
+
 @CLIENT.command('focus')
 async def add_focus(ctx, attribute, focus):
     """Add a focus for an attribute."""
@@ -315,6 +322,13 @@ async def gain_willpower(ctx, amount=1):
 async def gain_blood(ctx, amount=1):
     """Gain some blood."""
     await _call_session_and_output(ctx, SESSION.gain_blood,
+                                   ctx.message.author.id, amount)
+
+
+@gain.command('beast')
+async def gain_beast_traits(ctx, amount=1):
+    """Gain some beast traits."""
+    await _call_session_and_output(ctx, SESSION.gain_beast_traits,
                                    ctx.message.author.id, amount)
 
 

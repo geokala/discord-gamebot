@@ -51,7 +51,7 @@ class Character:
         }
         self.morality = {
             'max': 5,
-            'current': 0,
+            'current': 5,
             'beast traits': 0,
         }
         self.health_levels = {

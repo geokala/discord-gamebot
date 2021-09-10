@@ -534,6 +534,33 @@ class Session: # pylint: disable=R0904
             )
         return message
 
+    def gain_beast_traits(self, player_id, amount):
+        """Gain beast traits."""
+        character = self.player_characters[player_id]
+        amount = self._check_int(amount)
+
+        character.morality['beast traits'] += amount
+        return (
+            "You have gained {} beast traits. You now have {}.".format(
+                amount, character.morality['beast traits'],
+            )
+        )
+
+    def remove_beast_traits(self, player_id, amount):
+        """Lose beast traits."""
+        character = self.player_characters[player_id]
+        amount = self._check_int(amount)
+
+        character.morality['beast traits'] = max(
+            character.morality['beast traits'] - amount,
+            0
+        )
+        return (
+            "You have lost {} beast traits. You now have {}.".format(
+                amount, character.morality['beast traits'],
+            )
+        )
+
     def finish_character_creation(self):
         """End character creation, begin the game proper!"""
         self.character_creation = False
@@ -541,7 +568,7 @@ class Session: # pylint: disable=R0904
 
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
-#   add beast traits to character
+#   gain/lose morality
 #   add damage to character
 #   remove normal damage from character (opt: spending blood)
 #   remove agg damage from character (opt: spending blood)
