@@ -291,8 +291,30 @@ async def spend_willpower(ctx, amount=1):
 
 @spend.command('blood')
 async def spend_blood(ctx, amount=1):
-    """Spend some blood."""
+    """Gain some blood."""
     await _call_session_and_output(ctx, SESSION.spend_blood,
+                                   ctx.message.author.id, amount)
+
+
+@CLIENT.group('gain')
+async def gain(ctx):
+    """Gain resources."""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !gain with one of these: {}".format(
+            ", ".join([command.name for command in gain.commands])))
+
+
+@gain.command('willpower')
+async def gain_willpower(ctx, amount=1):
+    """Gain some blood."""
+    await _call_session_and_output(ctx, SESSION.gain_willpower,
+                                   ctx.message.author.id, amount)
+
+
+@gain.command('blood')
+async def gain_blood(ctx, amount=1):
+    """Gain some blood."""
+    await _call_session_and_output(ctx, SESSION.gain_blood,
                                    ctx.message.author.id, amount)
 
 

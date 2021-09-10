@@ -484,6 +484,7 @@ class Session: # pylint: disable=R0904
         return self._spend_resource('blood', player_id, amount)
 
     def _spend_resource(self, resource_type, player_id, amount):
+        """Spend some temporary resources for a character."""
         character = self.player_characters[player_id]
         resource = {
             'blood': character.blood,
@@ -492,14 +493,46 @@ class Session: # pylint: disable=R0904
         amount = self._check_int(amount)
         if resource['current'] < amount:
             raise BadInput(
-                'You cannot spend {} {}, you only have {}'.format(
+                'You cannot spend {} {}, you only have {}/{}'.format(
                     amount, resource_type, resource['current'],
+                    resource['max'],
                 )
             )
         resource['current'] -= amount
-        return "You spent {} {} and have {} remaining.".format(
-            amount, resource_type, resource['current'],
+        return "You spent {} {} and have {}/{} remaining.".format(
+            amount, resource_type, resource['current'], resource['max'],
         )
+
+    def gain_willpower(self, player_id, amount):
+        """Gain some willpower."""
+        return self._gain_resource('willpower', player_id, amount)
+
+    def gain_blood(self, player_id, amount):
+        """Gain some blood."""
+        return self._gain_resource('blood', player_id, amount)
+
+    def _gain_resource(self, resource_type, player_id, amount):
+        """Gain some temporary resources for a character."""
+        character = self.player_characters[player_id]
+        resource = {
+            'blood': character.blood,
+            'willpower': character.willpower,
+        }[resource_type]
+        amount = self._check_int(amount)
+        total = amount + resource['current']
+        remaining = max(total - resource['max'], 0)
+        gained = amount - remaining
+        resource['current'] += gained
+        message = "You gain {} {} and now have {}/{}.".format(
+            gained, resource_type, resource['current'], resource['max'],
+        )
+        if remaining:
+            message += (
+                ' You could not gain {} due to reaching your maximum.'.format(
+                    remaining,
+                )
+            )
+        return message
 
     def finish_character_creation(self):
         """End character creation, begin the game proper!"""
@@ -508,12 +541,10 @@ class Session: # pylint: disable=R0904
 
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
-#   restore willpower to all characters
 #   add beast traits to character
 #   add damage to character
 #   remove normal damage from character (opt: spending blood)
 #   remove agg damage from character (opt: spending blood)
-#   gain blood
 #   increase in-clan discipline (spending xp)
 #   increase out-of-clan discipline (spending xp)
 #   set name
