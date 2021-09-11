@@ -511,12 +511,39 @@ class Session: # pylint: disable=R0904
         """Gain some blood."""
         return self._gain_resource('blood', player_id, amount)
 
+    def gain_morality(self, player_id):
+        """Gain a point of morality."""
+        character = self.player_characters[player_id]
+        if character.morality['current'] == character.morality['max']:
+            raise BadInput('Your morality is at maximum already!')
+        cost = 10
+        message = 'Gain morality'
+        character.spend_xp(cost, message)
+        message = self._gain_resource('morality', player_id, 1)
+        return message + " You spent 10 XP"
+
+    def remove_morality(self, player_id):
+        """Remove a point of morality."""
+        character = self.player_characters[player_id]
+        character.morality['current'] -= 1
+        remaining = character.morality['current']
+        message = "You lost 1 morality and now have {}.".format(remaining)
+        if remaining == 0:
+            message += " You have entered wassail, the final frenzy!"
+        elif remaining < 3:
+            message += (
+                " You appear more pale and your bearing becomes feral."
+                " Your flesh is cold and you no longer breathe or blink."
+            )
+        return message
+
     def _gain_resource(self, resource_type, player_id, amount):
         """Gain some temporary resources for a character."""
         character = self.player_characters[player_id]
         resource = {
             'blood': character.blood,
             'willpower': character.willpower,
+            'morality': character.morality,
         }[resource_type]
         amount = self._check_int(amount)
         total = amount + resource['current']
@@ -568,7 +595,6 @@ class Session: # pylint: disable=R0904
 
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
-#   gain/lose morality
 #   add damage to character
 #   remove normal damage from character (opt: spending blood)
 #   remove agg damage from character (opt: spending blood)

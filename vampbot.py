@@ -267,6 +267,13 @@ async def remove_beast_traits(ctx, amount=1):
                                    ctx.message.author.id, amount)
 
 
+@remove.command('morality')
+async def remove_morality(ctx):
+    """Remove a point of morality."""
+    await _call_session_and_output(ctx, SESSION.remove_morality,
+                                   ctx.message.author.id)
+
+
 @CLIENT.command('focus')
 async def add_focus(ctx, attribute, focus):
     """Add a focus for an attribute."""
@@ -330,6 +337,13 @@ async def gain_beast_traits(ctx, amount=1):
     """Gain some beast traits."""
     await _call_session_and_output(ctx, SESSION.gain_beast_traits,
                                    ctx.message.author.id, amount)
+
+
+@gain.command('morality')
+async def gain_morality(ctx):
+    """Gain some morality."""
+    await _call_session_and_output(ctx, SESSION.gain_morality,
+                                   ctx.message.author.id)
 
 
 @CLIENT.event
