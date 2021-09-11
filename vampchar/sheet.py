@@ -59,7 +59,7 @@ class Character:
             'injured': 3,
             'incapacitated': 3,
         }
-        self.damage_taken = 0
+        self.damage_taken = []
         self.notes = []
         self.status = []
         self.equipment = []
@@ -90,10 +90,10 @@ class Character:
                 'healthy', 'injured', 'incapacitated'
         ]:
             health.extend([level for i in range(self.health_levels[level])])
-        if self.damage_taken <= len(health):
-            pos = max(self.damage_taken - 1, 0)
+        if len(self.damage_taken) <= len(health):
+            pos = max(len(self.damage_taken) - 1, 0)
             return health[pos]
-        return 'dead'
+        return 'torpor'
 
     def get_xp_costs(self):
         """Return a dict of XP costs for this character."""
@@ -253,12 +253,12 @@ _BASE_EXPECTED = {
             'rate': 0,
         },
         'willpower': {
-            'current': 0,
+            'current': 6,
             'max': 6,
         },
         'morality': {
             'max': 5,
-            'current': 0,
+            'current': 5,
             'beast traits': 0,
         },
         'health': {
@@ -267,7 +267,7 @@ _BASE_EXPECTED = {
                 'injured': 3,
                 'incapacitated': 3,
             },
-            'damage': 0,
+            'damage': [],
         },
         'status': [],
     },
@@ -343,18 +343,18 @@ def _test_get_health_level():
     print('Checking health levels...', end='')
     char = Character()
     assert char.get_health_level() == 'healthy'
-    char.damage_taken = 3
+    char.damage_taken = ['normal', 'normal', 'aggravated']
     assert char.get_health_level() == 'healthy'
-    char.damage_taken = 4
+    char.damage_taken.append('aggravated')
     assert char.get_health_level() == 'injured'
-    char.damage_taken = 6
+    char.damage_taken.extend(['normal', 'normal'])
     assert char.get_health_level() == 'injured'
-    char.damage_taken = 7
+    char.damage_taken.append('normal')
     assert char.get_health_level() == 'incapacitated'
-    char.damage_taken = 9
+    char.damage_taken.extend(['normal', 'aggravated'])
     assert char.get_health_level() == 'incapacitated'
-    char.damage_taken = 10
-    assert char.get_health_level() == 'dead'
+    char.damage_taken.append('normal')
+    assert char.get_health_level() == 'torpor'
     print(' OK.')
 
 
@@ -404,7 +404,6 @@ def _test_xp_costs():
     exp['Out-of-clan discipline'] = 'new level x 5'
     assert char.get_xp_costs() == exp
 
-    
     char.backgrounds['generation'] = 4
     try:
         char.get_xp_costs()
