@@ -93,7 +93,7 @@ class Character:
         if len(self.damage_taken) <= len(health):
             pos = max(len(self.damage_taken) - 1, 0)
             return health[pos]
-        return 'torpor'
+        return 'torpid'
 
     def get_xp_costs(self):
         """Return a dict of XP costs for this character."""
@@ -354,7 +354,7 @@ def _test_get_health_level():
     char.damage_taken.extend(['normal', 'aggravated'])
     assert char.get_health_level() == 'incapacitated'
     char.damage_taken.append('normal')
-    assert char.get_health_level() == 'torpor'
+    assert char.get_health_level() == 'torpid'
     print(' OK.')
 
 

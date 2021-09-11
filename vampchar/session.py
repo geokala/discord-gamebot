@@ -588,6 +588,40 @@ class Session: # pylint: disable=R0904
             )
         )
 
+    def inflict_damage(self, player_id, damage_type, amount):
+        """Inflict damage on a character."""
+        character = self.player_characters[player_id]
+        amount = self._check_int(amount)
+        if damage_type not in ['aggravated', 'normal']:
+            raise BadInput(
+                'Damage type must be normal or aggravated.'
+            )
+        for _ in range(amount):
+            character.damage_taken.append(damage_type)
+        health_state = character.get_health_level()
+        return (
+            "You have taken {} {} damage, and are {}".format(
+                amount, damage_type, health_state,
+            )
+        )
+
+    def heal_damage(self, player_id, damage_type):
+        """Heal damage on a character."""
+        character = self.player_characters[player_id]
+        if damage_type not in character.damage_taken:
+            raise BadInput("You had no {} damage.".format(damage_type))
+        character.damage_taken.remove(damage_type)
+        normal = character.damage_taken.count('normal')
+        aggravated = character.damage_taken.count('aggravated')
+        health_state = character.get_health_level()
+        return (
+            "You healed a point of {} damage. "
+            "You have {} normal and {} aggravated damage remaining. "
+            "You are now {}.".format(
+                damage_type, normal, aggravated, health_state,
+            )
+        )
+
     def finish_character_creation(self):
         """End character creation, begin the game proper!"""
         self.character_creation = False
@@ -595,9 +629,6 @@ class Session: # pylint: disable=R0904
 
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
-#   add damage to character
-#   remove normal damage from character (opt: spending blood)
-#   remove agg damage from character (opt: spending blood)
 #   increase in-clan discipline (spending xp)
 #   increase out-of-clan discipline (spending xp)
 #   set name

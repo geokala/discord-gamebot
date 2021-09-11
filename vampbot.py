@@ -220,6 +220,43 @@ async def inflict_derangement(ctx, *args):
                                    derangement)
 
 
+@inflict.command('damage')
+async def inflict_normal_damage(ctx, amount=1):
+    """Inflict one or more points of normal damage."""
+    await _call_session_and_output(ctx, SESSION.inflict_damage,
+                                   ctx.message.author.id, 'normal', amount)
+
+
+@inflict.command('aggravated')
+async def inflict_aggravated_damage(ctx, amount=1):
+    """Inflict one or more points of aggravated damage."""
+    await _call_session_and_output(ctx, SESSION.inflict_damage,
+                                   ctx.message.author.id,
+                                   'aggravated', amount)
+
+
+@CLIENT.group('heal')
+async def heal(ctx):
+    """Deal with healing ailments on a character."""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !heal with one of these: {}".format(
+            ", ".join([command.name for command in heal.commands])))
+
+
+@heal.command('damage')
+async def heal_normal_damage(ctx):
+    """Heal one point of normal damage."""
+    await _call_session_and_output(ctx, SESSION.heal_damage,
+                                   ctx.message.author.id, 'normal')
+
+
+@heal.command('aggravated')
+async def heal_aggravated_damage(ctx):
+    """Heal one point of aggravated damage."""
+    await _call_session_and_output(ctx, SESSION.heal_damage,
+                                   ctx.message.author.id, 'aggravated')
+
+
 @CLIENT.group('remove')
 async def remove(ctx):
     """Deal with removing things for xp on a character sheet."""
