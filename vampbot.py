@@ -138,7 +138,7 @@ async def set_background(ctx, *args):
 
 
 @_set.command('discipline')
-async def set_discipline(ctx, discipline, value):
+async def set_discipline(ctx, *args):
     """Set a discipline to a given value."""
     if len(args) < 2:
         await ctx.send(
