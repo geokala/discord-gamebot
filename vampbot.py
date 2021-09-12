@@ -168,6 +168,22 @@ async def buy_exceptional_skill(ctx, skill):
                                    exceed_maximum=True)
 
 
+@buy.command('in-clan')
+async def buy_in_clan_discipline(ctx, *discipline):
+    """Buy an extra point in an in-clan discipline."""
+    discipline = ' '.join(discipline)
+    await _call_session_and_output(ctx, SESSION.increase_discipline,
+                                   ctx.message.author.id, discipline)
+
+
+@buy.command('out-of-clan')
+async def buy_out_of_clan_discipline(ctx, *discipline):
+    """Buy an extra point in an out-of-clan discipline."""
+    discipline = ' '.join(discipline)
+    await _call_session_and_output(ctx, SESSION.increase_discipline,
+                                   ctx.message.author.id, discipline, True)
+
+
 @buy.command('background')
 async def buy_background(ctx, background):
     """Buy an extra point in a background."""

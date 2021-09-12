@@ -262,58 +262,58 @@ class Session: # pylint: disable=R0904
 
     def increase_skill(self, player_id, skill, exceed_maximum=False):
         """Increase a skill using xp."""
-        self._check_generation_is_set(player_id)
-        character = self.player_characters[player_id]
-        skill = self._get_correct_case_entry(skill, character.skills)
-        current_level = character.skills.get(skill, 0)
-
-        cost_multiplier = int(
-            character.get_xp_costs()['Skill'].split('x ')[1]
-        )
-        cost = (current_level + 1) * cost_multiplier
-        self._check_xp_available(player_id, cost)
-
-        if current_level == 5 and not exceed_maximum:
-            raise BadInput(
-                "You already have 5 points in this skill. "
-                "This is the maximum unless you have a merit allowing more."
-            )
-        character.skills[skill] = current_level + 1
-        message = "Raised {} to {}".format(
-            skill, character.skills[skill],
-        )
-        character.spend_xp(cost, message)
-        return message + " for {} XP".format(cost)
+        return self._increase_scaling_cost_things('skill', player_id, skill,
+                                                  exceed_maximum)
 
     def increase_background(self, player_id, background):
         """Increase a background using xp."""
-        self._check_generation_is_set(player_id)
-        character = self.player_characters[player_id]
-        background = self._get_correct_case_entry(
-            background, character.backgrounds)
-
         if background.lower() == 'generation':
             raise BadInput(
                 "You can't buy generation improvements with XP, only by "
                 "mercilessly draining the soul of someone stronger than "
                 "you. You monster."
             )
+        return self._increase_scaling_cost_things('background', player_id,
+                                                  background)
 
-        current_level = character.backgrounds.get(background, 0)
+    def increase_discipline(self, player_id, discipline, out_of_clan=False):
+        """Increase a discipline."""
+        discipline_type = 'in-clan discipline'
+        if out_of_clan:
+            discipline_type = 'out-of-clan discipline'
+        return self._increase_scaling_cost_things(discipline_type, player_id,
+                                                  discipline)
+
+    def _increase_scaling_cost_things(self, thing_type, player_id, thing,
+                                      exceed_maximum=False):
+        """Increase one of the entries on the character shet that has a
+        scaling cost- backgrounds, skills, or disciplines."""
+        self._check_generation_is_set(player_id)
+        character = self.player_characters[player_id]
+        things = {
+            'skill': character.skills,
+            'background': character.backgrounds,
+            'in-clan discipline': character.disciplines,
+            'out-of-clan discipline': character.disciplines,
+        }[thing_type]
+        thing = self._get_correct_case_entry(thing, things)
+
+        current_level = things.get(thing, 0)
 
         cost_multiplier = int(
-            character.get_xp_costs()['Background'].split('x ')[1]
+            character.get_xp_costs()[thing_type.capitalize()].split('x ')[1]
         )
-        cost = (current_level + 1) * cost_multiplier
+        cost = (current_level +1)  * cost_multiplier
         self._check_xp_available(player_id, cost)
 
-        if current_level == 5:
+        if current_level == 5 and not exceed_maximum:
             raise BadInput(
-                "You already have 5 points in this background."
+                "You already have 5 points in this {}. This is the maximum "
+                "unless you have a merit allowing more.".format(thing_type)
             )
-        character.backgrounds[background] = current_level + 1
-        message = "Raised {} to {}".format(
-            background, character.backgrounds[background],
+        things[thing] = current_level + 1
+        message = "Raised {} {} to {}".format(
+            thing_type, thing, things[thing],
         )
         character.spend_xp(cost, message)
         return message + " for {} XP".format(cost)
@@ -629,7 +629,6 @@ class Session: # pylint: disable=R0904
 
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
-#   increase in-clan discipline (spending xp)
-#   increase out-of-clan discipline (spending xp)
 #   set name
 #   undo
+#   reset
