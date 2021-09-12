@@ -219,6 +219,18 @@ class Session: # pylint: disable=R0904
         character.clan = clan
         return "Clan set to {}".format(clan)
 
+    def set_name(self, player_id, name):
+        """Set a player's (character) name."""
+        character = self.player_characters[player_id]
+        character.character = name
+        return "Name set to {}".format(name)
+
+    def set_archetype(self, player_id, archetype):
+        """Set a player's archetype."""
+        character = self.player_characters[player_id]
+        character.archetype = archetype
+        return "Archetype set to {}".format(archetype)
+
     def increase_attribute(self, player_id, attribute):
         """Spend XP to increase an attribute on a character."""
         self._validate_attribute(player_id, attribute)
@@ -629,6 +641,5 @@ class Session: # pylint: disable=R0904
 
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
-#   set name
 #   undo
 #   reset

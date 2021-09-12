@@ -138,6 +138,20 @@ async def set_clan(ctx, *clan_name):
                                    ctx.message.author.id, ' '.join(clan_name))
 
 
+@_set.command('name')
+async def set_name(ctx, *name):
+    """Set a character's character name."""
+    await _call_session_and_output(ctx, SESSION.set_name,
+                                   ctx.message.author.id, ' '.join(name))
+
+
+@_set.command('archetype')
+async def set_archetype(ctx, *archetype):
+    """Set a character's archetype."""
+    await _call_session_and_output(ctx, SESSION.set_archetype,
+                                   ctx.message.author.id, ' '.join(archetype))
+
+
 @CLIENT.group('buy')
 async def buy(ctx):
     """Deal with buying things for xp on a character sheet."""
