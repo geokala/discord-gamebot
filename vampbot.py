@@ -111,24 +111,44 @@ async def set_attribute(ctx, attribute, value):
 
 
 @_set.command('skill')
-async def set_skill(ctx, skill, value):
+async def set_skill(ctx, *args):
     """Set a skill to a given value."""
-    await _call_session_and_output(ctx, SESSION.set_skill,
-                                   ctx.message.author.id, skill, value)
+    if len(args) < 2:
+        await ctx.send(
+            'Expected a skill name followed by an integer for value.')
+    else:
+        skill = ' '.join(args[:-1])
+        value = args[-1]
+        await _call_session_and_output(ctx, SESSION.set_skill,
+                                       ctx.message.author.id, skill, value)
 
 
 @_set.command('background')
-async def set_background(ctx, background, value):
+async def set_background(ctx, *args):
     """Set a background to a given value."""
-    await _call_session_and_output(ctx, SESSION.set_background,
-                                   ctx.message.author.id, background, value)
+    if len(args) < 2:
+        await ctx.send(
+            'Expected a background name followed by an integer for value.')
+    else:
+        background = ' '.join(args[:-1])
+        value = args[-1]
+        await _call_session_and_output(ctx, SESSION.set_background,
+                                       ctx.message.author.id, background,
+                                       value)
 
 
 @_set.command('discipline')
 async def set_discipline(ctx, discipline, value):
     """Set a discipline to a given value."""
-    await _call_session_and_output(ctx, SESSION.set_discipline,
-                                   ctx.message.author.id, discipline, value)
+    if len(args) < 2:
+        await ctx.send(
+            'Expected a discipline name followed by an integer for value.')
+    else:
+        discipline = ' '.join(args[:-1])
+        value = args[-1]
+        await _call_session_and_output(ctx, SESSION.set_discipline,
+                                       ctx.message.author.id, discipline,
+                                       value)
 
 
 @_set.command('clan')
