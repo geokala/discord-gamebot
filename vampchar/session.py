@@ -1,5 +1,19 @@
 """Session management for vampire sessions."""
+from copy import deepcopy
+
 from .sheet import Character
+
+
+def support_undo(func):
+    """Make this function support undo."""
+    def set_undo_point_and_run(*args, **kwargs):
+        """Set the undo point and run the function."""
+        self = args[0]
+        player_id = args[1]
+        self.undo_points[player_id] = deepcopy(
+            self.player_characters[player_id])
+        return func(*args, **kwargs)
+    return set_undo_point_and_run
 
 
 class BadInput(Exception):
@@ -9,6 +23,7 @@ class BadInput(Exception):
 class Session: # pylint: disable=R0904
     """Vampire session manager."""
     player_characters = {}
+    undo_points = {}
     character_creation = True
 
     def load(self, session_save_path):
@@ -42,6 +57,7 @@ class Session: # pylint: disable=R0904
         """Get the json of a particular player's character sheet."""
         return self.player_characters[player_id].to_json()
 
+    @support_undo
     def add_focus(self, player_id, attribute, focus):
         """Add a focus on a given attribute."""
         if not self.character_creation:
@@ -56,6 +72,7 @@ class Session: # pylint: disable=R0904
         attributes[attribute]['focuses'].append(focus)
         return "Added {} to {} focuses.".format(focus, attribute)
 
+    @support_undo
     def remove_focus(self, player_id, attribute, focus):
         """Remove a focus from a given attribute."""
         if not self.character_creation:
@@ -70,6 +87,7 @@ class Session: # pylint: disable=R0904
         attributes[attribute]['focuses'].remove(focus)
         return "Removed {} from {} focuses.".format(focus, attribute)
 
+    @support_undo
     def set_attribute(self, player_id, attribute, value):
         """Set an attribute to a specified value."""
         if not self.character_creation:
@@ -81,6 +99,7 @@ class Session: # pylint: disable=R0904
             'value'] = value
         return "{} set to {}".format(attribute, value)
 
+    @support_undo
     def set_skill(self, player_id, skill, value):
         """Set a skill to a specified value."""
         if not self.character_creation:
@@ -99,6 +118,7 @@ class Session: # pylint: disable=R0904
         char_skills[skill] = value
         return "Set {} to {}".format(skill, value)
 
+    @support_undo
     def set_background(self, player_id, background, value):
         """Set a background to a specified value."""
         if not self.character_creation:
@@ -129,6 +149,7 @@ class Session: # pylint: disable=R0904
             self.player_characters[player_id].blood['rate'] = blood_rate
         return "Set {} to {}".format(background, value)
 
+    @support_undo
     def set_discipline(self, player_id, discipline, value):
         """Set a discipline to a specified value."""
         if not self.character_creation:
@@ -185,6 +206,7 @@ class Session: # pylint: disable=R0904
         bgs = self.player_characters[player_id].backgrounds
         return bgs.get('generation') or bgs.get('Generation')
 
+    @support_undo
     def add_note(self, player_id, content):
         """Add a note to a character."""
         self.player_characters[player_id].notes.append(content)
@@ -200,6 +222,7 @@ class Session: # pylint: disable=R0904
             ])
         return "You have no notes."
 
+    @support_undo
     def remove_note(self, player_id, pos):
         """Remove a note from a character (1-indexed for non-techies)."""
         pos = self._check_int(pos)
@@ -213,6 +236,7 @@ class Session: # pylint: disable=R0904
         content = notes.pop(pos - 1)
         return "Removed note {}: {}".format(pos, content)
 
+    @support_undo
     def set_clan(self, player_id, clan):
         """Set a character's clan."""
         character = self.player_characters[player_id]
@@ -221,18 +245,21 @@ class Session: # pylint: disable=R0904
         character.clan = clan
         return "Clan set to {}".format(clan)
 
+    @support_undo
     def set_name(self, player_id, name):
         """Set a player's (character) name."""
         character = self.player_characters[player_id]
         character.character = name
         return "Name set to {}".format(name)
 
+    @support_undo
     def set_archetype(self, player_id, archetype):
         """Set a player's archetype."""
         character = self.player_characters[player_id]
         character.archetype = archetype
         return "Archetype set to {}".format(archetype)
 
+    @support_undo
     def increase_attribute(self, player_id, attribute):
         """Spend XP to increase an attribute on a character."""
         self._validate_attribute(player_id, attribute)
@@ -274,11 +301,13 @@ class Session: # pylint: disable=R0904
                 return current_value
         return entry
 
+    @support_undo
     def increase_skill(self, player_id, skill, exceed_maximum=False):
         """Increase a skill using xp."""
         return self._increase_scaling_cost_things('skill', player_id, skill,
                                                   exceed_maximum)
 
+    @support_undo
     def increase_background(self, player_id, background):
         """Increase a background using xp."""
         if background.lower() == 'generation':
@@ -290,6 +319,7 @@ class Session: # pylint: disable=R0904
         return self._increase_scaling_cost_things('background', player_id,
                                                   background)
 
+    @support_undo
     def increase_discipline(self, player_id, discipline, out_of_clan=False):
         """Increase a discipline."""
         discipline_type = 'in-clan discipline'
@@ -332,6 +362,7 @@ class Session: # pylint: disable=R0904
         character.spend_xp(cost, message)
         return message + " for {} XP".format(cost)
 
+    @support_undo
     def add_merit(self, player_id, merit_name, cost):
         """Add a merit to a character."""
         character = self.player_characters[player_id]
@@ -356,6 +387,7 @@ class Session: # pylint: disable=R0904
         character.spend_xp(cost, message)
         return message + " with cost {}".format(cost)
 
+    @support_undo
     def add_flaw(self, player_id, flaw_name, value):
         """Add a flaw to the character.
         During character creation there are a maximum of seven points of
@@ -377,6 +409,7 @@ class Session: # pylint: disable=R0904
         character.flaws[flaw_name] = value
         return "Inflicted flaw {} with value {}.".format(flaw_name, value)
 
+    @support_undo
     def add_derangement(self, player_id, derangement):
         """Add a derangement to the character.
         During character creation there are a maximum of seven points of
@@ -427,6 +460,7 @@ class Session: # pylint: disable=R0904
                 )
             )
 
+    @support_undo
     def remove_merit(self, player_id, merit):
         """Remove a merit."""
         character = self.player_characters[player_id]
@@ -443,6 +477,7 @@ class Session: # pylint: disable=R0904
                 'You did not have the merit {}'.format(merit)
             )
 
+    @support_undo
     def remove_flaw(self, player_id, flaw):
         """Remove or buy-off a flaw."""
         character = self.player_characters[player_id]
@@ -463,6 +498,7 @@ class Session: # pylint: disable=R0904
         character.spend_xp(value, message)
         return message + " for {} XP".format(value)
 
+    @support_undo
     def remove_derangement(self, player_id, derangement):
         """Remove or buy-off a derangement."""
         character = self.player_characters[player_id]
@@ -491,10 +527,12 @@ class Session: # pylint: disable=R0904
         character.spend_xp(value, message)
         return message + ' for {} XP'.format(value)
 
+    @support_undo
     def spend_willpower(self, player_id, amount):
         """Spend some willpower."""
         return self._spend_resource('willpower', player_id, amount)
 
+    @support_undo
     def spend_blood(self, player_id, amount):
         """Spend some blood."""
         return self._spend_resource('blood', player_id, amount)
@@ -519,14 +557,17 @@ class Session: # pylint: disable=R0904
             amount, resource_type, resource['current'], resource['max'],
         )
 
+    @support_undo
     def gain_willpower(self, player_id, amount):
         """Gain some willpower."""
         return self._gain_resource('willpower', player_id, amount)
 
+    @support_undo
     def gain_blood(self, player_id, amount):
         """Gain some blood."""
         return self._gain_resource('blood', player_id, amount)
 
+    @support_undo
     def gain_morality(self, player_id):
         """Gain a point of morality."""
         character = self.player_characters[player_id]
@@ -538,6 +579,7 @@ class Session: # pylint: disable=R0904
         message = self._gain_resource('morality', player_id, 1)
         return message + " You spent 10 XP"
 
+    @support_undo
     def remove_morality(self, player_id):
         """Remove a point of morality."""
         character = self.player_characters[player_id]
@@ -577,6 +619,7 @@ class Session: # pylint: disable=R0904
             )
         return message
 
+    @support_undo
     def gain_beast_traits(self, player_id, amount):
         """Gain beast traits."""
         character = self.player_characters[player_id]
@@ -589,6 +632,7 @@ class Session: # pylint: disable=R0904
             )
         )
 
+    @support_undo
     def remove_beast_traits(self, player_id, amount):
         """Lose beast traits."""
         character = self.player_characters[player_id]
@@ -604,6 +648,7 @@ class Session: # pylint: disable=R0904
             )
         )
 
+    @support_undo
     def inflict_damage(self, player_id, damage_type, amount):
         """Inflict damage on a character."""
         character = self.player_characters[player_id]
@@ -621,6 +666,7 @@ class Session: # pylint: disable=R0904
             )
         )
 
+    @support_undo
     def heal_damage(self, player_id, damage_type):
         """Heal damage on a character."""
         character = self.player_characters[player_id]
@@ -643,12 +689,19 @@ class Session: # pylint: disable=R0904
         self.character_creation = False
         return "Character creation complete."
 
+    @support_undo
     def reset(self, player_id):
         """Reset a character to a blank sheet."""
         player_name = self.player_characters[player_id].player
         self.player_characters.pop(player_id)
         return self.add_player(player_id, player_name, reset=True)
 
+    def undo(self, player_id):
+        """Roll back the last change to a character."""
+        if player_id not in self.undo_points:
+            return "No recent action found to undo."""
+        self.player_characters[player_id] = self.undo_points.pop(player_id)
+        return "Rolled back last change."
+
+
 # TODO: No pdf output, give nice output
-# TODO: Modify characters:
-#   undo

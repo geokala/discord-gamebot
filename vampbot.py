@@ -44,6 +44,12 @@ async def reset(ctx):
 
 
 @CLIENT.command()
+async def undo(ctx):
+    """Undo the last change to your character."""
+    await _call_session_and_output(ctx, SESSION.undo, ctx.message.author.id)
+
+
+@CLIENT.command()
 async def get(ctx):
     """Get the character sheet."""
     await _call_session_and_output(
