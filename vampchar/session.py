@@ -350,7 +350,9 @@ class Session: # pylint: disable=R0904
             )
 
         character.merits[merit_name] = cost
-        return "Added merit {} with cost {}".format(merit_name, cost)
+        message = "Added merit {}".format(merit_name)
+        character.spend_xp(cost, message)
+        return message + " with cost {}".format(cost)
 
     def add_flaw(self, player_id, flaw_name, value):
         """Add a flaw to the character.
