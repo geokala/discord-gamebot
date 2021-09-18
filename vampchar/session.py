@@ -19,12 +19,14 @@ class Session: # pylint: disable=R0904
         """Save the game to its save path."""
         # TODO
 
-    def add_player(self, player_id, player_name):
+    def add_player(self, player_id, player_name, reset=False):
         """Add a player to the game."""
         if player_id in self.player_characters:
             raise BadInput("{} has already joined.".format(player_name))
         self.player_characters[player_id] = Character()
         self.player_characters[player_id].player = player_name
+        if reset:
+            return "Reset {}.".format(player_name)
         return "Added {}.".format(player_name)
 
     def award_xp(self, amount, reason):
@@ -641,7 +643,12 @@ class Session: # pylint: disable=R0904
         self.character_creation = False
         return "Character creation complete."
 
+    def reset(self, player_id):
+        """Reset a character to a blank sheet."""
+        player_name = self.player_characters[player_id].player
+        self.player_characters.pop(player_id)
+        return self.add_player(player_id, player_name, reset=True)
+
 # TODO: No pdf output, give nice output
 # TODO: Modify characters:
 #   undo
-#   reset
