@@ -212,6 +212,21 @@ async def set_max_willpower(ctx, maximum):
                                    ctx.message.author.id, maximum)
 
 
+@CLIENT.group('show')
+async def show(ctx):
+    """Display a character sheet."""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !show with one of these: {}".format(
+            ", ".join([command.name for command in show.commands])))
+
+
+@show.command('disciplines')
+async def show_disciplines(ctx):
+    """Show this character's disciplines."""
+    await _call_session_and_output(ctx, SESSION.show_disciplines,
+                                   ctx.message.author.id)
+
+
 @CLIENT.group('buy')
 async def buy(ctx):
     """Deal with buying things for xp on a character sheet."""

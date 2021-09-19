@@ -4,6 +4,10 @@ from copy import deepcopy
 from .sheet import Character
 
 
+DOT = '•'
+NO_DOT = '◦'
+
+
 def support_undo(func):
     """Make this function support undo."""
     def set_undo_point_and_run(*args, **kwargs):
@@ -735,6 +739,22 @@ class Session: # pylint: disable=R0904
             return "No recent action found to undo."""
         self.player_characters[player_id] = self.undo_points.pop(player_id)
         return "Rolled back last change."
+
+    def show_disciplines(self, player_id):
+        """Display the character's disciplines."""
+        character = self.player_characters[player_id]
+        disciplines = sorted(list(character.disciplines.keys()))
+        output = [" --- Disciplines ---"]
+        if disciplines:
+            for discipline in disciplines:
+                output.append("{}: {}{}".format(
+                    discipline,
+                    DOT * character.disciplines[discipline],
+                    NO_DOT * (5 - character.disciplines[discipline]),
+                ))
+        else:
+            output.append("None")
+        return '\n'.join(output)
 
 
 # TODO: No pdf output, give nice output
