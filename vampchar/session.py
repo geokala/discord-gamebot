@@ -168,6 +168,39 @@ class Session: # pylint: disable=R0904
         char_disciplines[discipline] = value
         return "Set {} to {}".format(discipline, value)
 
+    @support_undo
+    def set_blood_burn_rate(self, player_id, rate):
+        """Set the character's maximum blood burn rate per round."""
+        rate = self._check_int(rate)
+        self.player_characters[player_id].blood['rate'] = rate
+        return "Set blood burn rate to {}".format(rate)
+
+    @support_undo
+    def set_healthy_count(self, player_id, count):
+        """SEt the amount of healthy levels this character has."""
+        count = self._check_int(count)
+        self.player_characters[player_id].health_levels['healthy'] = count
+        return "You now have {} healthy levels.".format(count)
+
+    @support_undo
+    def set_unhealthy_counts(self, player_id, count):
+        """Set the amount of injured and incap levels this character has."""
+        count = self._check_int(count)
+        self.player_characters[player_id].health_levels['injured'] = count
+        self.player_characters[player_id].health_levels[
+            'incapacitated'] = count
+        return "You now have {} injured and incapacitated levels.".format(
+            count)
+
+    @support_undo
+    def set_max_willpower(self, player_id, maximum):
+        """Set the max willpower for this character."""
+        maximum = self._check_int(maximum)
+        self.player_characters[player_id].willpower['max'] = maximum
+        if self.character_creation:
+            self.player_characters[player_id].willpower['current'] = maximum
+        return "Your maximum willpower is now {}.".format(maximum)
+
     def _validate_attribute(self, player_id, attribute):
         """Complain if an attribute isn't valid."""
         attributes = self.player_characters[player_id].attributes

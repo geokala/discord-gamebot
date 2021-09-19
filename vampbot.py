@@ -184,6 +184,34 @@ async def set_archetype(ctx, *archetype):
                                    ctx.message.author.id, ' '.join(archetype))
 
 
+@_set.command('blood_rate')
+async def set_blood_rate(ctx, rate):
+    """Set a character's blood burn rate."""
+    await _call_session_and_output(ctx, SESSION.set_blood_burn_rate,
+                                   ctx.message.author.id, rate)
+
+
+@_set.command('healthy_count')
+async def set_healthy_count(ctx, count):
+    """Set a character's amount of healthy wound levels."""
+    await _call_session_and_output(ctx, SESSION.set_healthy_count,
+                                   ctx.message.author.id, count)
+
+
+@_set.command('unhealthy_counts')
+async def set_unhealthy_count(ctx, count):
+    """Set a character's amount of injured/incapacitated wound levels."""
+    await _call_session_and_output(ctx, SESSION.set_unhealthy_counts,
+                                   ctx.message.author.id, count)
+
+
+@_set.command('max_willpower')
+async def set_max_willpower(ctx, maximum):
+    """Set a character's maximum willpower."""
+    await _call_session_and_output(ctx, SESSION.set_max_willpower,
+                                   ctx.message.author.id, maximum)
+
+
 @CLIENT.group('buy')
 async def buy(ctx):
     """Deal with buying things for xp on a character sheet."""
