@@ -107,21 +107,21 @@ async def delete_note(ctx, pos):
 
 
 @CLIENT.group('set')
-async def _set(ctx):
+async def set_(ctx):
     """Set various character attributes"""
     if not ctx.subcommand_passed:
         await ctx.send("Try !set with one of these: {}".format(
-            ", ".join([command.name for command in _set.commands])))
+            ", ".join([command.name for command in set_.commands])))
 
 
-@_set.command('attribute')
+@set_.command('attribute')
 async def set_attribute(ctx, attribute, value):
     """Set an attribute to a given value."""
     await _call_session_and_output(ctx, SESSION.set_attribute,
                                    ctx.message.author.id, attribute, value)
 
 
-@_set.command('skill')
+@set_.command('skill')
 async def set_skill(ctx, *args):
     """Set a skill to a given value."""
     if len(args) < 2:
@@ -134,7 +134,7 @@ async def set_skill(ctx, *args):
                                        ctx.message.author.id, skill, value)
 
 
-@_set.command('background')
+@set_.command('background')
 async def set_background(ctx, *args):
     """Set a background to a given value."""
     if len(args) < 2:
@@ -148,7 +148,7 @@ async def set_background(ctx, *args):
                                        value)
 
 
-@_set.command('discipline')
+@set_.command('discipline')
 async def set_discipline(ctx, *args):
     """Set a discipline to a given value."""
     if len(args) < 2:
@@ -162,49 +162,49 @@ async def set_discipline(ctx, *args):
                                        value)
 
 
-@_set.command('clan')
+@set_.command('clan')
 async def set_clan(ctx, *clan_name):
     """Set a character's clan membership."""
     await _call_session_and_output(ctx, SESSION.set_clan,
                                    ctx.message.author.id, ' '.join(clan_name))
 
 
-@_set.command('name')
+@set_.command('name')
 async def set_name(ctx, *name):
     """Set a character's character name."""
     await _call_session_and_output(ctx, SESSION.set_name,
                                    ctx.message.author.id, ' '.join(name))
 
 
-@_set.command('archetype')
+@set_.command('archetype')
 async def set_archetype(ctx, *archetype):
     """Set a character's archetype."""
     await _call_session_and_output(ctx, SESSION.set_archetype,
                                    ctx.message.author.id, ' '.join(archetype))
 
 
-@_set.command('blood_rate')
+@set_.command('blood_rate')
 async def set_blood_rate(ctx, rate):
     """Set a character's blood burn rate."""
     await _call_session_and_output(ctx, SESSION.set_blood_burn_rate,
                                    ctx.message.author.id, rate)
 
 
-@_set.command('healthy_count')
+@set_.command('healthy_count')
 async def set_healthy_count(ctx, count):
     """Set a character's amount of healthy wound levels."""
     await _call_session_and_output(ctx, SESSION.set_healthy_count,
                                    ctx.message.author.id, count)
 
 
-@_set.command('unhealthy_counts')
+@set_.command('unhealthy_counts')
 async def set_unhealthy_count(ctx, count):
     """Set a character's amount of injured/incapacitated wound levels."""
     await _call_session_and_output(ctx, SESSION.set_unhealthy_counts,
                                    ctx.message.author.id, count)
 
 
-@_set.command('max_willpower')
+@set_.command('max_willpower')
 async def set_max_willpower(ctx, maximum):
     """Set a character's maximum willpower."""
     await _call_session_and_output(ctx, SESSION.set_max_willpower,
