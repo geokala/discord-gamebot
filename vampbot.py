@@ -76,7 +76,6 @@ async def begin(ctx):
     await _call_session_and_output(ctx, SESSION.finish_character_creation)
 
 
-# TODO: Organise groups of commands better; allow partial non-ambiguous command matching
 @CLIENT.group('notes')
 async def notes(ctx):
     """Deal with notes on a character sheet."""
@@ -514,7 +513,43 @@ async def close(_):
         pass
 
 
+def generate_partials(group=None):
+    """Generate aliases for all partial matches of commands, recursively."""
+    if group is None:
+        group = CLIENT
+    commands = group.all_commands
+
+    groups = []
+    aliases_mapping = {}
+
+    for command_name, command in commands.items():
+        if hasattr(command, 'commands'):
+            groups.append(command_name)
+        found_unambiguous = False
+        for pos in range(1, len(command_name)):
+            sub = command_name[:pos]
+            if found_unambiguous:
+                aliases_mapping[command_name].append(sub)
+            elif any(c.startswith(sub) for c in commands
+                     if c != command_name):
+                # This would be an ambiguous alias
+                continue
+            else:
+                aliases_mapping[command_name] = [sub]
+                found_unambiguous = True
+
+    for command_name, aliases in aliases_mapping.items():
+        command = commands[command_name]
+        command.aliases.extend(aliases)
+        group.remove_command(command_name)
+        group.add_command(command)
+
+    for sub_group in groups:
+        generate_partials(commands[sub_group])
+
+
 if __name__ == '__main__':
     CONFIG = load_config('config.json')
     SESSION.load(CONFIG['vamp_save_path'])
+    generate_partials()
     CLIENT.run(CONFIG['token'])
