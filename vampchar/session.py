@@ -776,4 +776,11 @@ class Session: # pylint: disable=R0904
 
 
 # TODO: No pdf output, give nice output
+#   Show merits/flaws
+#   Show header
+#   Show attributes
+#   Show XP
+#   Show state (blood, willpower, morality, health)
+#   Show equipment
+# TODO: Equipment
 # TODO: Make finish character creation be done on a per player basis
