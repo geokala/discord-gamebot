@@ -219,11 +219,25 @@ async def show(ctx):
             ", ".join([command.name for command in show.commands])))
 
 
+@show.command('backgrounds')
+async def show_backgrounds(ctx):
+    """Show this character's backgrounds."""
+    await _call_session_and_output(ctx, SESSION.show_dotted,
+                                   ctx.message.author.id, 'backgrounds')
+
+
 @show.command('disciplines')
 async def show_disciplines(ctx):
     """Show this character's disciplines."""
-    await _call_session_and_output(ctx, SESSION.show_disciplines,
-                                   ctx.message.author.id)
+    await _call_session_and_output(ctx, SESSION.show_dotted,
+                                   ctx.message.author.id, 'disciplines')
+
+
+@show.command('skills')
+async def show_skills(ctx):
+    """Show this character's skills."""
+    await _call_session_and_output(ctx, SESSION.show_dotted,
+                                   ctx.message.author.id, 'skills')
 
 
 @CLIENT.group('buy')

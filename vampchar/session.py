@@ -6,6 +6,7 @@ from .sheet import Character
 
 DOT = '•'
 NO_DOT = '◦'
+STAR = '★'
 
 
 def support_undo(func):
@@ -740,17 +741,34 @@ class Session: # pylint: disable=R0904
         self.player_characters[player_id] = self.undo_points.pop(player_id)
         return "Rolled back last change."
 
-    def show_disciplines(self, player_id):
-        """Display the character's disciplines."""
+    def show_dotted(self, player_id, entry_type):
+        """Display dotted entries from character sheet."""
         character = self.player_characters[player_id]
-        disciplines = sorted(list(character.disciplines.keys()))
-        output = [" --- Disciplines ---"]
-        if disciplines:
-            for discipline in disciplines:
-                output.append("{}: {}{}".format(
-                    discipline,
-                    DOT * character.disciplines[discipline],
-                    NO_DOT * (5 - character.disciplines[discipline]),
+        entries_map = {
+            'backgrounds': character.backgrounds,
+            'disciplines': character.disciplines,
+            'skills': character.skills,
+        }
+        if entry_type not in entries_map:
+            raise BadInput(
+                'Invalid dotted type. Valid are: {}'.format(
+                    ', '.join(entries_map.keys()),
+                )
+            )
+        entries_base = entries_map[entry_type]
+        output = [" --- {} ---".format(entry_type.capitalize())]
+        entries = sorted(list(entries_base))
+        if entries:
+            for entry in entries:
+                rating = entries_base[entry]
+                dots = min(rating, 5)
+                empty_dots = max(5 - rating, 0)
+                stars = max(rating - 5, 0)
+                output.append("{}: {}{}{}".format(
+                    entry,
+                    DOT * dots,
+                    NO_DOT * empty_dots,
+                    STAR * stars,
                 ))
         else:
             output.append("None")
@@ -758,3 +776,4 @@ class Session: # pylint: disable=R0904
 
 
 # TODO: No pdf output, give nice output
+# TODO: Make finish character creation be done on a per player basis
