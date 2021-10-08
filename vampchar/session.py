@@ -774,11 +774,64 @@ class Session: # pylint: disable=R0904
             output.append("None")
         return '\n'.join(output)
 
+    def show_header(self, player_id):
+        """Display the header for a character sheet."""
+        character = self.player_characters[player_id]
+        output = [" --- Character ---"]
+        output.append('Name: {}'.format(character.character))
+        output.append('Archetype: {}'.format(character.archetype))
+        output.append('Clan: {}'.format(character.clan))
+        if character.sect:
+            output.append('Sect: {}'.format(character.sect))
+        if character.title:
+            output.append('Title: {}'.format(character.title))
+        return '\n'.join(output)
+
+    def show_attributes(self, player_id):
+        """Display the attributes for a character sheet."""
+        character = self.player_characters[player_id]
+        output = [" --- Attributes ---"]
+        output.append(" Physical           Mental             Social")
+        base = ""
+        extended = ""
+        needs_ext = False
+        focus = ["", "", ""]
+        focus_needed = 1
+        for attr in ['physical', 'mental', 'social']:
+            attr_value = character.attributes[attr]['value']
+            focuses = character.attributes[attr]['focuses']
+            base_value = min(attr_value, 10)
+            dots = DOT * base_value
+            no_dots = NO_DOT * (10 - base_value)
+            display = dots + no_dots
+            # Insert a space for readability
+            display = display[:5] + ' ' + display[5:]
+            base += display
+            if attr != 'social':
+                base += '        '
+
+            ext_value = max((attr_value - 10), 0)
+            if ext_value:
+                needs_ext = True
+            # Max will be 15 (5 generation all in one attrib)
+            dots = DOT * ext_value
+            no_dots = NO_DOT * (5 - ext_value)
+            display = dots + no_dots
+            extended += display
+            if attr != 'social':
+                extended += '                  '
+
+            focus_needed = max(focus_needed, len(focuses))
+            # TODO: Finish focus
+            
+        output.append(base)
+        if needs_ext:
+            output.append(extended)
+        return '\n'.join(output)
+
 
 # TODO: No pdf output, give nice output
 #   Show merits/flaws
-#   Show header
-#   Show attributes
 #   Show XP
 #   Show state (blood, willpower, morality, health)
 #   Show equipment

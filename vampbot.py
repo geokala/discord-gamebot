@@ -240,6 +240,20 @@ async def show_skills(ctx):
                                    ctx.message.author.id, 'skills')
 
 
+@show.command('character')
+async def show_header(ctx):
+    """Show this character's name, etc."""
+    await _call_session_and_output(ctx, SESSION.show_header,
+                                   ctx.message.author.id)
+
+
+@show.command('attributes')
+async def show_attributes(ctx):
+    """Show this character's attributes."""
+    await _call_session_and_output(ctx, SESSION.show_attributes,
+                                   ctx.message.author.id)
+
+
 @CLIENT.group('buy')
 async def buy(ctx):
     """Deal with buying things for xp on a character sheet."""
