@@ -585,6 +585,12 @@ async def emb(ctx):
         value='On several lines\nWe create a new message\nTesting discord stuff',
     )
     print(dir(f1))
+    # Can maybe do three fields side by side with the names being:
+    # __Attributes__\nPhysical
+    # \nSocial
+    # \nMental
+    #
+    # Need to check how to set max cols
     await ctx.send(embed=embed)
     await ctx.send(embed=testattr)
 
