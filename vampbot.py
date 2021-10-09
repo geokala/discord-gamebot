@@ -3,7 +3,7 @@
 import json
 import random
 
-from discord import Game
+from discord import Embed, Game
 from discord.ext.commands import Bot, is_owner
 import websockets
 
@@ -539,6 +539,54 @@ async def close(_):
         await CLIENT.close()
     except websockets.exceptions.ConnectionClosedOK:
         pass
+
+@CLIENT.command()
+async def emb(ctx):
+    embed = Embed(
+        title='Test embed',
+        description='Testing embed',
+    )
+    embed.add_field(
+        name='Test field',
+        value='Testing',
+    )
+    embed.add_field(
+        name='Test field 2',
+        value='Other testing',
+    )
+    embed.add_field(
+        name='Test field 3 (not inline)',
+        value='Other testing',
+        inline=False,
+    )
+    f1 = embed.add_field(
+        name='Cannot have',
+        value='No title',
+    )
+    embed.add_field(
+        name='List',
+        value=['Say hello', 'Wave goodbye'],
+    )
+    testattr = embed.add_field(
+        name='~~\u200b        \u200b~~Attributes~~\u200b        \u200b~~',
+        value='\u200b',
+        inline=False,
+    )
+    testattr.add_field(
+        name='Physical',
+        value='hello',
+    )
+    testattr.add_field(
+        name='Mental',
+        value='whoops',
+    )
+    testattr.add_field(
+        name='Social',
+        value='On several lines\nWe create a new message\nTesting discord stuff',
+    )
+    print(dir(f1))
+    await ctx.send(embed=embed)
+    await ctx.send(embed=testattr)
 
 
 def generate_partials(group=None):
