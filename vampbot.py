@@ -543,48 +543,101 @@ async def close(_):
 @CLIENT.command()
 async def emb(ctx):
     embed = Embed(
-        title='Test embed',
-        description='Testing embed',
+        title='Character sheet',
     )
     embed.add_field(
-        name='Test field',
-        value='Testing',
+        name=(
+            '~~\u200b    \u200b~~**Character**~~\u200b    \u200b~~\n'
+            'Physical'
+        ),
+        value=(
+            'Name: Joe Bloggs\n'
+            'Player: Me\n'
+        ),
     )
     embed.add_field(
-        name='Test field 2',
-        value='Other testing',
+        name='\u200b\n\u200b',
+        value=(
+            'Archetype: Troublemaker\n'
+            'Clan: Tremere\n'
+        ),
     )
     embed.add_field(
-        name='Test field 3 (not inline)',
-        value='Other testing',
-        inline=False,
-    )
-    f1 = embed.add_field(
-        name='Cannot have',
-        value='No title',
+        name='\u200b\n\u200b',
+        value=(
+            'Sect: Unaligned\n'
+            'Title: None\n'
+        ),
     )
     embed.add_field(
-        name='List',
-        value=['Say hello', 'Wave goodbye'],
+        name=(
+            '~~\u200b    \u200b~~**Attributes**~~\u200b    \u200b~~\n'
+            'Physical'
+        ),
+        value='••••• •••••\n•••••',
     )
-    testattr = embed.add_field(
-        name='~~\u200b        \u200b~~Attributes~~\u200b        \u200b~~',
-        value='\u200b',
-        inline=False,
+    embed.add_field(
+        name='\u200b\nMental',
+        value='••••• ◦◦◦◦◦\n◦◦◦◦◦',
     )
-    testattr.add_field(
-        name='Physical',
-        value='hello',
+    embed.add_field(
+        name='\u200b\nSocial',
+        value='•••◦◦ ◦◦◦◦◦\n◦◦◦◦◦',
     )
-    testattr.add_field(
-        name='Mental',
-        value='whoops',
+    embed.add_field(
+        name=(
+            '~~\u200b    \u200b~~**Skills**~~\u200b    \u200b~~'
+        ),
+        value=(
+            'Skill1 •••••\n'
+            'Skill2 •••••\n'
+            'Skill3 •••••\n'
+        ),
     )
-    testattr.add_field(
-        name='Social',
-        value='On several lines\nWe create a new message\nTesting discord stuff',
+    embed.add_field(
+        name='\u200b',
+        value=(
+            'Skill4 •••••\n'
+            'Skill5 •••••\n'
+            'Skill6 •••••\n'
+        ),
     )
-    print(dir(f1))
+    embed.add_field(
+        name='\u200b',
+        value=(
+            'Skill7 •••••\n'
+            'Skill8 •••••\n'
+            'Skill9 •••••\n'
+        ),
+    )
+    embed.add_field(
+        name=(
+            '~~\u200b                                \u200b~~\n'
+            'Backgrounds'
+        ),
+        value=(
+            'Background1 •••••\n'
+            'Background2 •••••\n'
+            'Background3 •••••\n'
+        ),
+    )
+    embed.add_field(
+        name='\u200b\nDisciplines',
+        value=(
+            'Discipline1 •••••\n'
+            'Discipline2 •••••\n'
+            'Discipline3 •••••\n'
+        ),
+    )
+    embed.add_field(
+        name='\u200b\nMerits and Flaws',
+        value=(
+            'Merit1 (3)\n'
+            'Merit2 (2)\n'
+            'Flaw1 (-2)\n'
+            'Derangement1'
+        ),
+    )
     # Can maybe do three fields side by side with the names being:
     # __Attributes__\nPhysical
     # \nSocial
@@ -592,7 +645,6 @@ async def emb(ctx):
     #
     # Need to check how to set max cols
     await ctx.send(embed=embed)
-    await ctx.send(embed=testattr)
 
 
 def generate_partials(group=None):
