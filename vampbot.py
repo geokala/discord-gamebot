@@ -12,6 +12,9 @@ from vampchar.session import BadInput, Session
 CLIENT = Bot(command_prefix='!')
 CONFIG = {}
 SESSION = Session()
+DOT = '•'
+NO_DOT = '◦'
+STAR = '★'
 
 
 def load_config(path):
@@ -585,22 +588,45 @@ async def emb(ctx):
     )
 
     # Add attributes
+    def _format_attribute(attribute):
+        output = ''
+        value = attribute['value']
+
+        base = min(value, 10)
+        output = DOT * base + NO_DOT * (10 - base)
+        # Insert a space for readability
+        output = output[:5] + ' ' + output[5:]
+        output += '\n'
+
+        bonus = max(value - 10, 0)
+        output += 'Bonus: '
+        output += DOT * bonus + NO_DOT * (5 - bonus)
+        output += '\n'
+
+        output += ' '.join(
+            focus.title() for focus in attribute['focuses']
+        )
+        return output
+
     attributes = character['attributes']
     embed.add_field(
         name=(
             '~~\u200b    \u200b~~**Attributes**~~\u200b    \u200b~~\n'
             'Physical'
         ),
-        value='••••• •••••\n•••••\nfocuses',
+        value=_format_attribute(attributes['physical']),
     )
     embed.add_field(
         name='\u200b\nMental',
-        value='••••• ◦◦◦◦◦\n◦◦◦◦◦',
+        value=_format_attribute(attributes['mental']),
     )
     embed.add_field(
         name='\u200b\nSocial',
-        value='•••◦◦ ◦◦◦◦◦\n◦◦◦◦◦',
+        value=_format_attribute(attributes['social']),
     )
+
+    # Add skills
+    # TODO: From here
     embed.add_field(
         name=(
             '~~\u200b    \u200b~~**Skills**~~\u200b    \u200b~~'
