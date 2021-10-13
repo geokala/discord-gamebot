@@ -545,36 +545,53 @@ async def emb(ctx):
     embed = Embed(
         title='Character sheet',
     )
+    character = SESSION.get_player_dict(ctx.message.author.id)
+
+    # Add header
+    header = character['header']
     embed.add_field(
         name=(
-            '~~\u200b    \u200b~~**Character**~~\u200b    \u200b~~\n'
-            'Physical'
+            '~~\u200b    \u200b~~**Character**~~\u200b    \u200b~~'
         ),
         value=(
-            'Name: Joe Bloggs\n'
-            'Player: Me\n'
+            'Name: {name}\n'
+            'Player: {player}\n'
+        ).format(
+            name=header['character'],
+            player=ctx.message.author.display_name,
         ),
     )
     embed.add_field(
-        name='\u200b\n\u200b',
+        name='\u200b',
         value=(
-            'Archetype: Troublemaker\n'
-            'Clan: Tremere\n'
+            'Archetype: {archetype}\n'
+            'Clan: {clan}\n'
+        ).format(
+            archetype=header['archetype'].title(),
+            clan=header['clan'].title(),
         ),
     )
+    sect = header['sect'] or 'unaligned'
+    title = header['title'] or 'none'
     embed.add_field(
-        name='\u200b\n\u200b',
+        name='\u200b',
         value=(
-            'Sect: Unaligned\n'
-            'Title: None\n'
+            'Sect: {sect}\n'
+            'Title: {title}\n'
+        ).format(
+            sect=sect.title(),
+            title=title.title(),
         ),
     )
+
+    # Add attributes
+    attributes = character['attributes']
     embed.add_field(
         name=(
             '~~\u200b    \u200b~~**Attributes**~~\u200b    \u200b~~\n'
             'Physical'
         ),
-        value='••••• •••••\n•••••',
+        value='••••• •••••\n•••••\nfocuses',
     )
     embed.add_field(
         name='\u200b\nMental',
@@ -638,12 +655,6 @@ async def emb(ctx):
             'Derangement1'
         ),
     )
-    # Can maybe do three fields side by side with the names being:
-    # __Attributes__\nPhysical
-    # \nSocial
-    # \nMental
-    #
-    # Need to check how to set max cols
     await ctx.send(embed=embed)
 
 

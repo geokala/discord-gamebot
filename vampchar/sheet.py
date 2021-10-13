@@ -144,7 +144,11 @@ class Character:
 
     def to_json(self):
         """Return a json dump of the character."""
-        return json.dumps({
+        return json.dumps(self.to_dict(), sort_keys=True)
+
+    def to_dict(self):
+        """Return the dict of this character."""
+        return {
             'header': {
                 'player': self.player,
                 'character': self.character,
@@ -175,7 +179,7 @@ class Character:
             },
             'equipment': self.equipment,
             'notes': self.notes,
-        }, sort_keys=True)
+        }
 
     def from_json(self, json_data):
         """Load this character from a json dump."""

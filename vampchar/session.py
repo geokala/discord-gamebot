@@ -62,6 +62,10 @@ class Session: # pylint: disable=R0904
         """Get the json of a particular player's character sheet."""
         return self.player_characters[player_id].to_json()
 
+    def get_player_dict(self, player_id):
+        """Get the dict of a particular player's character sheet."""
+        return self.player_characters[player_id].to_dict()
+
     @support_undo
     def add_focus(self, player_id, attribute, focus):
         """Add a focus on a given attribute."""
@@ -828,7 +832,6 @@ class Session: # pylint: disable=R0904
         if needs_ext:
             output.append(extended)
         return '\n'.join(output)
-
 
 # TODO: No pdf output, give nice output
 #   Show merits/flaws
