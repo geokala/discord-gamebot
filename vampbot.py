@@ -630,34 +630,50 @@ async def emb(ctx):
         value=_format_attribute(attributes['social']),
     )
 
+    def _make_skill_columns(skills):
+        columns = ['\u200b', '\u200b', '\u200b']
+        ordered_skills = sorted(list(skills.keys()))
+        last_finish = 0
+        for col in range(3):
+            if col == 0:
+                finish = (len(skills) // 3) + (len(skills) % 3)
+            elif col == 1:
+                remaining = len(skills) - last_finish
+                if remaining:
+                    finish = (remaining // 2) + (remaining % 2)
+            else:
+                finish = None
+            start = last_finish
+            last_finish = finish
+
+            for skill in ordered_skills[start:finish]:
+                skill_value = skills[skill]
+                base = min(skill_value, 5)
+                extra = max(skill_value - 5, 0)
+                rating_output = DOT * base
+                rating_output += NO_DOT * (5 - base)
+                if extra:
+                    rating_output += ' '
+                    rating_output += DOT * extra
+                columns[col] += '{}: {}\n'.format(
+                    skill, rating_output,
+                )
+        return columns
+
     # Add skills
-    # TODO: From here
+    skills = character['skills']
+    columns = _make_skill_columns(skills)
     embed.add_field(
         name=(
             '~~\u200b    \u200b~~**Skills**~~\u200b    \u200b~~'
         ),
-        value=(
-            'Skill1 •••••\n'
-            'Skill2 •••••\n'
-            'Skill3 •••••\n'
-        ),
+        value=columns[0],
     )
-    embed.add_field(
-        name='\u200b',
-        value=(
-            'Skill4 •••••\n'
-            'Skill5 •••••\n'
-            'Skill6 •••••\n'
-        ),
-    )
-    embed.add_field(
-        name='\u200b',
-        value=(
-            'Skill7 •••••\n'
-            'Skill8 •••••\n'
-            'Skill9 •••••\n'
-        ),
-    )
+    for column in columns[1:]:
+        embed.add_field(name='\u200b', value=column)
+
+    # Add backgrounds, disciplines, merits, and flaws
+    # TODO: From here
     embed.add_field(
         name=(
             '~~\u200b                                \u200b~~\n'
