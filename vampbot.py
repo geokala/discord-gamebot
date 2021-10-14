@@ -552,6 +552,8 @@ async def emb(ctx):
 
     # Add header
     header = character['header']
+    sect = header['sect'] or 'unaligned'
+    title = header['title'] or 'none'
     embed.add_field(
         name=(
             '~~\u200b    \u200b~~**Character**~~\u200b    \u200b~~'
@@ -559,31 +561,34 @@ async def emb(ctx):
         value=(
             'Name: {name}\n'
             'Player: {player}\n'
+            'Archetype: {archetype}\n'
         ).format(
             name=header['character'],
             player=ctx.message.author.display_name,
-        ),
-    )
-    embed.add_field(
-        name='\u200b',
-        value=(
-            'Archetype: {archetype}\n'
-            'Clan: {clan}\n'
-        ).format(
             archetype=header['archetype'].title(),
-            clan=header['clan'].title(),
         ),
     )
-    sect = header['sect'] or 'unaligned'
-    title = header['title'] or 'none'
     embed.add_field(
         name='\u200b',
         value=(
+            'Clan: {clan}\n'
             'Sect: {sect}\n'
             'Title: {title}\n'
         ).format(
+            clan=header['clan'].title(),
             sect=sect.title(),
             title=title.title(),
+        ),
+    )
+    embed.add_field(
+        name='\u200b',
+        value=(
+            '**XP**\n'
+            'Unspent: {unspent}\n'
+            'Total: {total}\n'
+        ).format(
+            unspent=character['xp']['current'],
+            total=character['xp']['total'],
         ),
     )
 
