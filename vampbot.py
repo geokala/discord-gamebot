@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 """Discord based game bot."""
 import json
+from math import ceil
 import random
 
 from discord import Embed, Game
@@ -636,11 +637,11 @@ async def emb(ctx):
         last_finish = 0
         for col in range(3):
             if col == 0:
-                finish = (len(skills) // 3) + (len(skills) % 3)
+                finish = ceil(len(skills) / 3)
             elif col == 1:
                 remaining = len(skills) - last_finish
                 if remaining:
-                    finish = (remaining // 2) + (remaining % 2)
+                    finish = last_finish + ceil(remaining / 2)
             else:
                 finish = None
             start = last_finish
@@ -656,7 +657,7 @@ async def emb(ctx):
                     rating_output += ' '
                     rating_output += DOT * extra
                 columns[col] += '{}: {}\n'.format(
-                    skill, rating_output,
+                    skill.title(), rating_output,
                 )
         return columns
 
