@@ -215,49 +215,6 @@ async def set_max_willpower(ctx, maximum):
                                    ctx.message.author.id, maximum)
 
 
-@CLIENT.group('show')
-async def show(ctx):
-    """Display a character sheet."""
-    if not ctx.subcommand_passed:
-        await ctx.send("Try !show with one of these: {}".format(
-            ", ".join([command.name for command in show.commands])))
-
-
-@show.command('backgrounds')
-async def show_backgrounds(ctx):
-    """Show this character's backgrounds."""
-    await _call_session_and_output(ctx, SESSION.show_dotted,
-                                   ctx.message.author.id, 'backgrounds')
-
-
-@show.command('disciplines')
-async def show_disciplines(ctx):
-    """Show this character's disciplines."""
-    await _call_session_and_output(ctx, SESSION.show_dotted,
-                                   ctx.message.author.id, 'disciplines')
-
-
-@show.command('skills')
-async def show_skills(ctx):
-    """Show this character's skills."""
-    await _call_session_and_output(ctx, SESSION.show_dotted,
-                                   ctx.message.author.id, 'skills')
-
-
-@show.command('character')
-async def show_header(ctx):
-    """Show this character's name, etc."""
-    await _call_session_and_output(ctx, SESSION.show_header,
-                                   ctx.message.author.id)
-
-
-@show.command('attributes')
-async def show_attributes(ctx):
-    """Show this character's attributes."""
-    await _call_session_and_output(ctx, SESSION.show_attributes,
-                                   ctx.message.author.id)
-
-
 @CLIENT.group('buy')
 async def buy(ctx):
     """Deal with buying things for xp on a character sheet."""
@@ -544,6 +501,11 @@ async def close(_):
     except websockets.exceptions.ConnectionClosedOK:
         pass
 
+
+# TODO: No pdf output, give nice output
+#   Show state (blood, willpower, morality, health)
+#   Show equipment
+# TODO: Clean up and rename this command
 @CLIENT.command()
 async def emb(ctx):
     embed = Embed(
