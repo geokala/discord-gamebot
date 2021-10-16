@@ -633,7 +633,8 @@ async def emb(ctx):
 
     def _make_skill_columns(skills):
         columns = ['\u200b', '\u200b', '\u200b']
-        ordered_skills = sorted(list(skills.keys()))
+        ordered_skills = sorted(list(skills.keys()),
+                                key=str.casefold)
         last_finish = 0
         for col in range(3):
             if col == 0:
@@ -648,18 +649,19 @@ async def emb(ctx):
             last_finish = finish
 
             for skill in ordered_skills[start:finish]:
-                skill_value = skills[skill]
-                base = min(skill_value, 5)
-                extra = max(skill_value - 5, 0)
-                rating_output = DOT * base
-                rating_output += NO_DOT * (5 - base)
-                if extra:
-                    rating_output += ' '
-                    rating_output += DOT * extra
-                columns[col] += '{}: {}\n'.format(
-                    skill.title(), rating_output,
-                )
+                columns[col] += _dotted_display(skill, skills[skill])
         return columns
+
+    def _dotted_display(name, value):
+        base = min(value, 5)
+        extra = max(value - 5, 0)
+
+        rating_output = DOT * base
+        rating_output += NO_DOT * (5 - base)
+        if extra:
+            rating_output += ' '
+            rating_output += DOT * extra
+        return '{}: {}\n'.format(name.title(), rating_output)
 
     # Add skills
     skills = character['skills']
@@ -674,34 +676,44 @@ async def emb(ctx):
         embed.add_field(name='\u200b', value=column)
 
     # Add backgrounds, disciplines, merits, and flaws
-    # TODO: From here
+    backgrounds = character['backgrounds']
+    ordered_backgrounds = sorted(list(backgrounds.keys()),
+                                 key=str.casefold)
     embed.add_field(
         name=(
             '~~\u200b                                \u200b~~\n'
             'Backgrounds'
         ),
-        value=(
-            'Background1 •••••\n'
-            'Background2 •••••\n'
-            'Background3 •••••\n'
+        value='\u200b' + ''.join(
+            _dotted_display(name, backgrounds[name])
+            for name in ordered_backgrounds
         ),
     )
+    disciplines = character['disciplines']
+    ordered_disciplines = sorted(list(disciplines.keys()))
     embed.add_field(
         name='\u200b\nDisciplines',
-        value=(
-            'Discipline1 •••••\n'
-            'Discipline2 •••••\n'
-            'Discipline3 •••••\n'
+        value='\u200b' + ''.join(
+            _dotted_display(name, disciplines[name])
+            for name in ordered_disciplines
         ),
     )
+    merits = character['merits_and_flaws']['merits']
+    ordered_merits = sorted(list(merits.keys()), key=str.casefold)
+    flaws = character['merits_and_flaws']['flaws']
+    ordered_flaws = sorted(list(flaws.keys()), key=str.casefold)
+    derangements = sorted(character['merits_and_flaws']['derangements'],
+                          key=str.casefold)
+    output = '\u200b'
+    for merit in ordered_merits:
+        output += '{} ({})\n'.format(merit.title(), merits[merit])
+    for flaw in ordered_flaws:
+        output += '{} (-{})\n'.format(flaw.title(), flaws[flaw])
+    for derangement in derangements:
+        output += '{}\n'.format(derangement.title())
     embed.add_field(
         name='\u200b\nMerits and Flaws',
-        value=(
-            'Merit1 (3)\n'
-            'Merit2 (2)\n'
-            'Flaw1 (-2)\n'
-            'Derangement1'
-        ),
+        value=output,
     )
     await ctx.send(embed=embed)
 
