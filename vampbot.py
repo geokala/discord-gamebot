@@ -504,6 +504,7 @@ async def close(_):
 
 # TODO: No pdf output, give nice output
 #   Show state (blood, willpower, morality, health)
+#   Status (put this in the header as a new, not inline, embed?)
 #   Show equipment
 # TODO: Clean up and rename this command
 @CLIENT.command()
@@ -677,6 +678,10 @@ async def emb(ctx):
         name='\u200b\nMerits and Flaws',
         value=output,
     )
+
+    # Add blood, willpower, morality, health
+    # TODO: From here
+
     await ctx.send(embed=embed)
 
 
