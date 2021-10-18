@@ -678,9 +678,9 @@ async def emb(ctx):
         value=output,
     )
 
-    def _format_blood(blood_state):
+    def _format_resource(state):
         output = ''
-        for pos in range(blood_state['max']):
+        for pos in range(state['max']):
             # Add a newline every ten and a space every five blood for
             # readability
             if pos % 15 == 0 and pos > 0:
@@ -688,17 +688,20 @@ async def emb(ctx):
             elif pos % 5 == 0 and pos > 0:
                 output += ' '
 
-            output += DOT if pos < blood_state['current'] else NO_DOT
+            output += DOT if pos < state['current'] else NO_DOT
         return output
 
     # Add blood, willpower, morality (incl. beast traits), health
     state = character['state']
+    blood_and_willpower_output = _format_resource(state['blood'])
+    blood_and_willpower_output += '\n**Willpower**\n'
+    blood_and_willpower_output += _format_resource(state['willpower'])
     embed.add_field(
         name=(
             '~~\u200b                                \u200b~~\n'
             'Blood ({}/round)'.format(state['blood']['rate'])
         ),
-        value='\u200b' + _format_blood(state['blood']),
+        value=blood_and_willpower_output,
     )
 
     # TODO: From here
