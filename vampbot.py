@@ -740,7 +740,7 @@ async def emb(ctx):
         value=_format_health(state['health']),
     )
 
-    # TODO: From here
+    # TODO: From here (morality, beast traits)
 
     await ctx.send(embed=embed)
 
