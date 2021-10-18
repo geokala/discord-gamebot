@@ -726,6 +726,10 @@ class Session: # pylint: disable=R0904
             )
         )
 
+    def get_health_level(self, player_id):
+        """Return the current health level of the character."""
+        return self.player_characters[player_id].get_health_level()
+
     def finish_character_creation(self):
         """End character creation, begin the game proper!"""
         self.character_creation = False

@@ -15,6 +15,7 @@ CONFIG = {}
 SESSION = Session()
 DOT = '•'
 NO_DOT = '◦'
+SKULL = '🕱'
 
 
 def load_config(path):
@@ -691,6 +692,35 @@ async def emb(ctx):
             output += DOT if pos < state['current'] else NO_DOT
         return output
 
+    def _format_health(health_state):
+        output = ''
+
+        damage_applied = 0
+        for level in ['healthy', 'injured', 'incapacitated']:
+            output += '{}: '.format(level.capitalize())
+
+            for pos in range(health_state['levels'][level]):
+                if damage_applied < len(health_state['damage']):
+                    damage_type = health_state['damage'][damage_applied]
+                    if damage_type == 'normal':
+                        output += NO_DOT
+                    else:
+                        output += SKULL
+                    damage_applied += 1
+                else:
+                    output += DOT
+            output += '\n'
+
+        if damage_applied < len(health_state['damage']):
+            output += 'Excess: '
+            for damage_type in health_state['damage'][damage_applied:]:
+                if damage_type == 'normal':
+                    output += NO_DOT
+                else:
+                    output += SKULL
+
+        return output
+
     # Add blood, willpower, morality (incl. beast traits), health
     state = character['state']
     blood_and_willpower_output = _format_resource(state['blood'])
@@ -702,6 +732,12 @@ async def emb(ctx):
             'Blood ({}/round)'.format(state['blood']['rate'])
         ),
         value=blood_and_willpower_output,
+    )
+    embed.add_field(
+        name='\u200b\nHealth ({})'.format(
+            SESSION.get_health_level(ctx.message.author.id)
+        ),
+        value=_format_health(state['health']),
     )
 
     # TODO: From here
