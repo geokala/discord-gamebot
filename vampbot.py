@@ -15,7 +15,6 @@ CONFIG = {}
 SESSION = Session()
 DOT = '•'
 NO_DOT = '◦'
-STAR = '★'
 
 
 def load_config(path):
@@ -679,7 +678,29 @@ async def emb(ctx):
         value=output,
     )
 
-    # Add blood, willpower, morality, health
+    def _format_blood(blood_state):
+        output = ''
+        for pos in range(blood_state['max']):
+            # Add a newline every ten and a space every five blood for
+            # readability
+            if pos % 15 == 0 and pos > 0:
+                output += '\n'
+            elif pos % 5 == 0 and pos > 0:
+                output += ' '
+
+            output += DOT if pos < blood_state['current'] else NO_DOT
+        return output
+
+    # Add blood, willpower, morality (incl. beast traits), health
+    state = character['state']
+    embed.add_field(
+        name=(
+            '~~\u200b                                \u200b~~\n'
+            'Blood ({}/round)'.format(state['blood']['rate'])
+        ),
+        value='\u200b' + _format_blood(state['blood']),
+    )
+
     # TODO: From here
 
     await ctx.send(embed=embed)
