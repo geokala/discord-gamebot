@@ -503,8 +503,6 @@ async def close(_):
 
 
 # TODO: No pdf output, give nice output
-#   Show state (blood, willpower, morality, health)
-#   Status (put this in the header as a new, not inline, embed?)
 #   Show equipment
 # TODO: Clean up and rename this command
 @CLIENT.command()
@@ -555,6 +553,15 @@ async def emb(ctx):
             total=character['xp']['total'],
         ),
     )
+
+    # Show status
+    if character['state']['status']:
+        embed.add_field(
+            name='Status',
+            value=', '.join(status.title()
+                            for status in character['state']['status']),
+            inline=False,
+        )
 
     # Add attributes
     def _format_attribute(attribute):
@@ -721,6 +728,26 @@ async def emb(ctx):
 
         return output
 
+    def _format_morality(morality_state):
+        output = ''
+
+        for pos in range(morality_state['max']):
+            if pos % 5 == 0 and pos > 0:
+                output += ' '
+
+            output += DOT if pos < morality_state['current'] else NO_DOT
+        output += '\n\n'
+        output += '**Beast traits**\n'
+        if morality_state['beast traits']:
+            for pos in range(morality_state['beast traits']):
+                if pos % 5 == 0 and pos > 0:
+                    output += ' '
+
+                output += DOT
+        else:
+            output += 'None'
+        return output
+
     # Add blood, willpower, morality (incl. beast traits), health
     state = character['state']
     blood_and_willpower_output = _format_resource(state['blood'])
@@ -739,8 +766,10 @@ async def emb(ctx):
         ),
         value=_format_health(state['health']),
     )
-
-    # TODO: From here (morality, beast traits)
+    embed.add_field(
+        name='\u200b\nMorality',
+        value=_format_morality(state['morality']),
+    )
 
     await ctx.send(embed=embed)
 
