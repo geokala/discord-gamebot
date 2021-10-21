@@ -773,6 +773,8 @@ async def emb(ctx):
 
     await ctx.send(embed=embed)
 
+# TODO: Commands for equipment (incl. characters taking/dropping)
+
 
 def generate_partials(group=None):
     """Generate aliases for all partial matches of commands, recursively."""

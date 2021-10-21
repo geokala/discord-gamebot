@@ -29,6 +29,7 @@ class Session: # pylint: disable=R0904
     """Vampire session manager."""
     player_characters = {}
     undo_points = {}
+    equipment = {}
 
     def load(self, session_save_path):
         """Load the game from its save path."""
@@ -751,4 +752,55 @@ class Session: # pylint: disable=R0904
         self.player_characters[player_id] = self.undo_points.pop(player_id)
         return "Rolled back last change."
 
-# TODO: Equipment
+    def create_equipment(self, equipment_name, category):
+        """Create an item of equipment in the pool."""
+        if equipment_name in self.equipment:
+            raise BadInput("{} already exists.".format(equipment_name))
+        self.equipment[equipment_name] = {
+            'category': category,
+            'qualities': [],
+        }
+        return "{} created.".format(equipment_name)
+
+    def destroy_equipment(self, equipment_name):
+        """Remove an item of equipment from the pool."""
+        if equipment_name not in self.equipment:
+            raise BadInput("{} does not exist.".format(equipment_name))
+        # TODO: This should also remove it from characters who have it
+        self.equipment.pop(equipment_name)
+        return "{} destroyed.".format(equipment_name)
+
+    def add_quality_to_equipment(self, equipment_name, quality):
+        """Add a quality to a piece of equipment."""
+        if equipment_name not in self.equipment:
+            raise BadInput("{} does not exist.".format(equipment_name))
+        if quality in self.equipment[equipment_name]['qualities']:
+            raise BadInput("{} already has the property {}".format(
+                equipment_name, quality))
+        self.equipment[equipment_name].append(quality)
+        return "Added {} to {}".format(quality, equipment_name)
+
+    def remove_quality_from_equipment(self, equipment_name, quality):
+        """Remove a quality from a piece of equipment."""
+        if equipment_name not in self.equipment:
+            raise BadInput("{} does not exist.".format(equipment_name))
+        if quality not in self.equipment[equipment_name]['qualities']:
+            raise BadInput("{} does not have the property {}".format(
+                equipment_name, quality))
+        self.equipment[equipment_name].remove(quality)
+        return "Removed {} from {}".format(quality, equipment_name)
+
+    def list_equipment(self):
+        """List items of equipment."""
+        output = 'Equipment available:\n'
+        for equipment, details in self.equipment.items():
+            output += '{name} [{category}] ({qualities})\n'.format(
+                name=equipment,
+                category=details['category'],
+                qualities=', '.join(details['qualities']),
+            )
+        if not self.equipment:
+            output += 'None'
+        return output
+
+# TODO: take equipment, drop equipment
