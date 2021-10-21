@@ -29,7 +29,6 @@ class Session: # pylint: disable=R0904
     """Vampire session manager."""
     player_characters = {}
     undo_points = {}
-    character_creation = True
 
     def load(self, session_save_path):
         """Load the game from its save path."""
@@ -69,82 +68,82 @@ class Session: # pylint: disable=R0904
     @support_undo
     def add_focus(self, player_id, attribute, focus):
         """Add a focus on a given attribute."""
-        if not self.character_creation:
+        character = self.player_characters[player_id]
+        if not character.character_creation:
             raise BadInput(
                 "Focuses cannot be added after character creation.")
         self._validate_attribute(player_id, attribute)
-        attributes = self.player_characters[player_id].attributes
-        if focus in attributes[attribute]['focuses']:
+        if focus in character.attributes[attribute]['focuses']:
             raise BadInput("You already have focus {} in attribute {}".format(
                 focus, attribute,
             ))
-        attributes[attribute]['focuses'].append(focus)
+        character.attributes[attribute]['focuses'].append(focus)
         return "Added {} to {} focuses.".format(focus, attribute)
 
     @support_undo
     def remove_focus(self, player_id, attribute, focus):
         """Remove a focus from a given attribute."""
-        if not self.character_creation:
+        character = self.player_characters[player_id]
+        if not character.character_creation:
             raise BadInput(
                 "Focuses cannot be removed after character creation.")
         self._validate_attribute(player_id, attribute)
-        attributes = self.player_characters[player_id].attributes
-        if focus not in attributes[attribute]['focuses']:
+        if focus not in character.attributes[attribute]['focuses']:
             return "You did not have focus {} in attribute {}".format(
                 focus, attribute,
             )
-        attributes[attribute]['focuses'].remove(focus)
+        character.attributes[attribute]['focuses'].remove(focus)
         return "Removed {} from {} focuses.".format(focus, attribute)
 
     @support_undo
     def set_attribute(self, player_id, attribute, value):
         """Set an attribute to a specified value."""
-        if not self.character_creation:
+        character = self.player_characters[player_id]
+        if not character.character_creation:
             raise BadInput(
                 "Attributes can not be set after character creation.")
         self._validate_attribute(player_id, attribute)
         value = self._check_int(value)
-        self.player_characters[player_id].attributes[attribute][
-            'value'] = value
+        character.attributes[attribute]['value'] = value
         return "{} set to {}".format(attribute, value)
 
     @support_undo
     def set_skill(self, player_id, skill, value):
         """Set a skill to a specified value."""
-        if not self.character_creation:
+        character = self.player_characters[player_id]
+        if not character.character_creation:
             raise BadInput("Skills can not be set after character creation.")
         value = self._check_int(value)
-        char_skills = self.player_characters[player_id].skills
         if value == 0:
-            if skill not in char_skills:
+            if skill not in character.skills:
                 raise BadInput(
                     "Can't remove {}- you don't have that skill.".format(
                         skill,
                     )
                 )
-            char_skills.pop(skill)
+            character.skills.pop(skill)
             return "Removed {} skill".format(skill)
-        char_skills[skill] = value
+        character.skills[skill] = value
         return "Set {} to {}".format(skill, value)
 
     @support_undo
     def set_background(self, player_id, background, value):
         """Set a background to a specified value."""
-        if not self.character_creation:
+        character = self.player_characters[player_id]
+        if not character.character_creation:
             raise BadInput(
                 "Backgrounds can not be set after character creation.")
         value = self._check_int(value)
-        char_bgs = self.player_characters[player_id].backgrounds
         if value == 0:
-            if background not in char_bgs:
+            if background not in character.backgrounds:
                 raise BadInput(
                     "Can't remove {}- you don't have that background.".format(
                         background,
                     )
                 )
-            char_bgs.pop(background)
+            character.backgrounds.pop(background)
             return "Removed {} background".format(background)
-        char_bgs[background] = value
+        character.backgrounds[background] = value
         if background.lower() == 'generation':
             max_blood, blood_rate = {
                 1: (10, 1),
@@ -153,28 +152,28 @@ class Session: # pylint: disable=R0904
                 4: (20, 4),
                 5: (30, 5),
             }[value]
-            self.player_characters[player_id].blood['max'] = max_blood
-            self.player_characters[player_id].blood['current'] = max_blood
-            self.player_characters[player_id].blood['rate'] = blood_rate
+            character.blood['max'] = max_blood
+            character.blood['current'] = max_blood
+            character.blood['rate'] = blood_rate
         return "Set {} to {}".format(background, value)
 
     @support_undo
     def set_discipline(self, player_id, discipline, value):
         """Set a discipline to a specified value."""
-        if not self.character_creation:
+        character = self.player_characters[player_id]
+        if not character.character_creation:
             return "Backgrounds can not be set after character creation."
         value = self._check_int(value)
-        char_disciplines = self.player_characters[player_id].disciplines
         if value == 0:
-            if discipline not in char_disciplines:
+            if discipline not in character.disciplines:
                 raise BadInput (
                     "Can't remove {}- you don't have that discipline.".format(
                         discipline,
                     )
                 )
-            char_disciplines.pop(discipline)
+            character.disciplines.pop(discipline)
             return "Removed {} discipline".format(discipline)
-        char_disciplines[discipline] = value
+        character.disciplines[discipline] = value
         return "Set {} to {}".format(discipline, value)
 
     @support_undo
@@ -205,9 +204,10 @@ class Session: # pylint: disable=R0904
     def set_max_willpower(self, player_id, maximum):
         """Set the max willpower for this character."""
         maximum = self._check_int(maximum)
-        self.player_characters[player_id].willpower['max'] = maximum
-        if self.character_creation:
-            self.player_characters[player_id].willpower['current'] = maximum
+        character = self.player_characters[player_id]
+        character.willpower['max'] = maximum
+        if character.character_creation:
+            character.willpower['current'] = maximum
         return "Your maximum willpower is now {}.".format(maximum)
 
     def _validate_attribute(self, player_id, attribute):
@@ -441,7 +441,7 @@ class Session: # pylint: disable=R0904
         if flaw_name.lower() in [item.lower() for item in character.flaws]:
             raise BadInput('You already have the flaw {}'.format(flaw_name))
 
-        if self.character_creation:
+        if character.character_creation:
             self._check_flaws_and_derangements_limit(player_id, value)
             character.flaws[flaw_name] = value
             character.award_xp(value, "Took flaw: {}".format(flaw_name))
@@ -464,7 +464,7 @@ class Session: # pylint: disable=R0904
             raise BadInput('You already have the derangement {}'.format(
                 derangement))
 
-        if self.character_creation:
+        if character.character_creation:
             is_malkavian = character.clan.lower() == 'malkavian'
             value = 2
             if is_malkavian and len(character.derangements) == 0:
@@ -510,7 +510,7 @@ class Session: # pylint: disable=R0904
 
         try:
             value = character.merits.pop(merit)
-            if self.character_creation:
+            if character.character_creation:
                 character.experience['current'] += value
                 return "Removed {} and refunded {} XP".format(merit, value)
             return "Removed {}".format(merit)
@@ -530,7 +530,7 @@ class Session: # pylint: disable=R0904
 
         message = "Removed flaw {}".format(flaw)
         value = character.flaws[flaw]
-        if self.character_creation:
+        if character.character_creation:
             character.flaws.pop(flaw)
             character.experience['current'] -= value
             character.experience['total'] -= value
@@ -559,7 +559,7 @@ class Session: # pylint: disable=R0904
 
         message = "Removed derangement {}".format(derangement)
         value = 2
-        if self.character_creation:
+        if character.character_creation:
             character.derangements.remove(derangement)
             character.experience['current'] -= value
             character.experience['total'] -= value
@@ -730,9 +730,11 @@ class Session: # pylint: disable=R0904
         """Return the current health level of the character."""
         return self.player_characters[player_id].get_health_level()
 
-    def finish_character_creation(self):
+    @support_undo
+    def finish_character_creation(self, player_id):
         """End character creation, begin the game proper!"""
-        self.character_creation = False
+        character = self.player_characters[player_id]
+        character.character_creation = False
         return "Character creation complete."
 
     @support_undo
@@ -750,4 +752,3 @@ class Session: # pylint: disable=R0904
         return "Rolled back last change."
 
 # TODO: Equipment
-# TODO: Make finish character creation be done on a per player basis

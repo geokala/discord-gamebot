@@ -63,6 +63,7 @@ class Character:
         self.notes = []
         self.status = []
         self.equipment = []
+        self.character_creation = True
 
     def award_xp(self, amount, reason):
         """Award XP to this character."""
@@ -179,6 +180,7 @@ class Character:
             },
             'equipment': self.equipment,
             'notes': self.notes,
+            'character_creation': self.character_creation,
         }
 
     def from_json(self, json_data):
@@ -212,6 +214,8 @@ class Character:
         self.disciplines = data['disciplines']
         self.equipment = data['equipment']
         self.notes = data['notes']
+
+        self.character_creation = data['character_creation']
 
 
 _BASE_EXPECTED = {
@@ -277,6 +281,7 @@ _BASE_EXPECTED = {
     },
     'equipment': [],
     'notes': [],
+    'character_creation': True,
 }
 
 
@@ -308,6 +313,7 @@ def _assert_expected_character(character, expected):
     assert character.disciplines == expected['disciplines']
     assert character.equipment == expected['equipment']
     assert character.notes == expected['notes']
+    assert character.character_creation == expected['character_creation']
 
 
 def _test_initial_character():

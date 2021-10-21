@@ -74,10 +74,10 @@ async def award(ctx, amount, reason):
     await _call_session_and_output(ctx, SESSION.award_xp, amount, reason)
 
 @CLIENT.command()
-@is_owner()
 async def begin(ctx):
     """Finish character creation, begin the adventure!"""
-    await _call_session_and_output(ctx, SESSION.finish_character_creation)
+    await _call_session_and_output(ctx, SESSION.finish_character_creation,
+                                   ctx.message.author.id)
 
 
 @CLIENT.group('notes')
@@ -706,7 +706,7 @@ async def emb(ctx):
         for level in ['healthy', 'injured', 'incapacitated']:
             output += '{}: '.format(level.capitalize())
 
-            for pos in range(health_state['levels'][level]):
+            for _ in range(health_state['levels'][level]):
                 if damage_applied < len(health_state['damage']):
                     damage_type = health_state['damage'][damage_applied]
                     if damage_type == 'normal':
