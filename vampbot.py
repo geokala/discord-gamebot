@@ -418,6 +418,67 @@ async def remove_focus(ctx, attribute, focus):
                                    ctx.message.author.id, attribute, focus)
 
 
+# TODO: Take/drop equipment
+@CLIENT.group('equipment')
+async def equipment(ctx):
+    """Spend resources."""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !equipment with one of these: {}".format(
+            ", ".join([command.name for command in equipment.commands])))
+
+
+@equipment.command('create')
+@is_owner()
+async def create_equipment(ctx, *args):
+    """Create an item of equipment in the pool."""
+    category = args[0]
+    equipment_name = ' '.join(args[1:])
+    await _call_session_and_output(ctx, SESSION.create_equipment,
+                                   equipment_name, category)
+
+
+@equipment.command('delete')
+@is_owner()
+async def delete_equipment(ctx, *args):
+    """Delete an item of equipment from the pool (and any characters)."""
+    equipment_name = ' '.join(args)
+    await _call_session_and_output(ctx, SESSION.destroy_equipment,
+                                   equipment_name)
+
+
+@equipment.command('list')
+async def list_equipment(ctx):
+    """List equipment in pool."""
+    await _call_session_and_output(ctx, SESSION.list_equipment)
+
+
+@equipment.command('quality')
+@is_owner()
+async def add_equipment_quality(ctx, *args):
+    """Add a quality to a piece of equipment in the pool."""
+    args = ' '.join(args).split(':')
+    if len(args) != 2:
+        await ctx.send("Syntax: <equipment_name>:<quality name>")
+    else:
+        equipment_name, quality = args
+        await _call_session_and_output(ctx, SESSION.add_quality_to_equipment,
+                                       equipment_name, quality)
+
+
+@equipment.command('unquality')
+@is_owner()
+async def remove_equipment_quality(ctx, *args):
+    """Remove a quality from a piece of equipment in the pool."""
+    args = ' '.join(args).split(':')
+    if len(args) != 2:
+        await ctx.send("Syntax: <equipment_name>:<quality name>")
+    else:
+        equipment_name, quality = args
+        await _call_session_and_output(
+            ctx, SESSION.remove_quality_from_equipment,
+            equipment_name, quality)
+
+
 @CLIENT.group('spend')
 async def spend(ctx):
     """Spend resources."""
@@ -772,8 +833,6 @@ async def emb(ctx):
     )
 
     await ctx.send(embed=embed)
-
-# TODO: Commands for equipment (incl. characters taking/dropping)
 
 
 def generate_partials(group=None):

@@ -777,7 +777,7 @@ class Session: # pylint: disable=R0904
         if quality in self.equipment[equipment_name]['qualities']:
             raise BadInput("{} already has the property {}".format(
                 equipment_name, quality))
-        self.equipment[equipment_name].append(quality)
+        self.equipment[equipment_name]['qualities'].append(quality)
         return "Added {} to {}".format(quality, equipment_name)
 
     def remove_quality_from_equipment(self, equipment_name, quality):
@@ -787,18 +787,20 @@ class Session: # pylint: disable=R0904
         if quality not in self.equipment[equipment_name]['qualities']:
             raise BadInput("{} does not have the property {}".format(
                 equipment_name, quality))
-        self.equipment[equipment_name].remove(quality)
+        self.equipment[equipment_name]['qualities'].remove(quality)
         return "Removed {} from {}".format(quality, equipment_name)
 
     def list_equipment(self):
         """List items of equipment."""
         output = 'Equipment available:\n'
         for equipment, details in self.equipment.items():
-            output += '{name} [{category}] ({qualities})\n'.format(
+            output += '{name} [{category}]'.format(
                 name=equipment,
                 category=details['category'],
-                qualities=', '.join(details['qualities']),
             )
+            if details['qualities']:
+                output += ' ({})'.format(', '.join(details['qualities']))
+            output += '\n'
         if not self.equipment:
             output += 'None'
         return output
