@@ -418,7 +418,6 @@ async def remove_focus(ctx, attribute, focus):
                                    ctx.message.author.id, attribute, focus)
 
 
-# TODO: Take/drop equipment
 @CLIENT.group('equipment')
 async def equipment(ctx):
     """Spend resources."""
@@ -433,13 +432,16 @@ async def create_equipment(ctx, *args):
     """Create an item of equipment in the pool."""
     category = args[0]
     equipment_name = ' '.join(args[1:])
-    await _call_session_and_output(ctx, SESSION.create_equipment,
-                                   equipment_name, category)
+    if not equipment_name:
+        await ctx.send('Syntax: <category> <equipment name>')
+    else:
+        await _call_session_and_output(ctx, SESSION.create_equipment,
+                                       equipment_name, category)
 
 
-@equipment.command('delete')
+@equipment.command('destroy')
 @is_owner()
-async def delete_equipment(ctx, *args):
+async def destroy_equipment(ctx, *args):
     """Delete an item of equipment from the pool (and any characters)."""
     equipment_name = ' '.join(args)
     await _call_session_and_output(ctx, SESSION.destroy_equipment,
@@ -477,6 +479,22 @@ async def remove_equipment_quality(ctx, *args):
         await _call_session_and_output(
             ctx, SESSION.remove_quality_from_equipment,
             equipment_name, quality)
+
+
+@equipment.command('take')
+async def take_equipment(ctx, *args):
+    """Add an item of equipment to your character."""
+    equipment_name = ' '.join(args)
+    await _call_session_and_output(ctx, SESSION.take_equipment,
+                                   ctx.message.author.id, equipment_name)
+
+
+@equipment.command('drop')
+async def drop_equipment(ctx, *args):
+    """Remove an item of equipment from your character."""
+    equipment_name = ' '.join(args)
+    await _call_session_and_output(ctx, SESSION.drop_equipment,
+                                   ctx.message.author.id, equipment_name)
 
 
 @CLIENT.group('spend')

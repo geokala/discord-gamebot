@@ -766,9 +766,18 @@ class Session: # pylint: disable=R0904
         """Remove an item of equipment from the pool."""
         if equipment_name not in self.equipment:
             raise BadInput("{} does not exist.".format(equipment_name))
-        # TODO: This should also remove it from characters who have it
+        removed_from = set()
+        for character in self.player_characters.values():
+            for _ in range(character.equipment.count(equipment_name)):
+                character.equipment.remove(equipment_name)
+                removed_from.add(character.character)
         self.equipment.pop(equipment_name)
-        return "{} destroyed.".format(equipment_name)
+        message = "{} destroyed.".format(equipment_name)
+        if removed_from:
+            removed_from = sorted(list(removed_from))
+            message += ' Equipment removed from: {}'.format(
+                ', '.join(removed_from))
+        return message
 
     def add_quality_to_equipment(self, equipment_name, quality):
         """Add a quality to a piece of equipment."""
@@ -805,4 +814,22 @@ class Session: # pylint: disable=R0904
             output += 'None'
         return output
 
-# TODO: take equipment, drop equipment
+    def take_equipment(self, player_id, equipment_name):
+        """Take a piece of equipment for your character."""
+        if equipment_name not in self.equipment:
+            raise BadInput("{} does not exist.".format(equipment_name))
+        character = self.player_characters[player_id]
+        character.equipment.append(equipment_name)
+        amount = character.equipment.count(equipment_name)
+        return "You now possess {} {}".format(amount, equipment_name)
+
+    def drop_equipment(self, player_id, equipment_name):
+        """Drop a piece of equipment from your character."""
+        character = self.player_characters[player_id]
+        if equipment_name not in character.equipment:
+            raise BadInput("You did not possess a {}".format(equipment_name))
+        character.equipment.remove(equipment_name)
+        amount = character.equipment.count(equipment_name)
+        return "You have dropped 1 {}, and now have {}".format(
+            equipment_name, amount,
+        )
