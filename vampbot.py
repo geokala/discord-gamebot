@@ -872,6 +872,8 @@ async def show_character(ctx): # pylint: disable=R0914
 
 
 # TODO: Show equipment on character
+# TODO: Save (on ctrl+c or close)
+# TODO: Load (on_ready)
 
 
 def generate_partials(group=None):
