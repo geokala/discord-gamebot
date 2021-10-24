@@ -581,11 +581,144 @@ async def close(_):
         pass
 
 
-# TODO: No pdf output, give nice output
-#   Show equipment
-# TODO: Clean up and rename this command
-@CLIENT.command()
-async def emb(ctx):
+@CLIENT.group('show')
+async def show(ctx):
+    """Show character sheet or equipment."""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !show with one of these: {}".format(
+            ", ".join([command.name for command in show.commands])))
+
+
+# Add attributes
+def _format_attribute(attribute):
+    """Format an attribute for display."""
+    output = ''
+    value = attribute['value']
+
+    base = min(value, 10)
+    output = DOT * base + NO_DOT * (10 - base)
+    # Insert a space for readability
+    output = output[:5] + ' ' + output[5:]
+    output += '\n'
+
+    bonus = max(value - 10, 0)
+    output += 'Bonus: '
+    output += DOT * bonus + NO_DOT * (5 - bonus)
+    output += '\n'
+
+    output += ' '.join(
+        focus.title() for focus in attribute['focuses']
+    )
+    return output
+
+
+def _make_skill_columns(skills):
+    """Prepare the skill columns for display."""
+    columns = ['\u200b', '\u200b', '\u200b']
+    ordered_skills = sorted(list(skills.keys()),
+                            key=str.casefold)
+    last_finish = 0
+    for col in range(3):
+        if col == 0:
+            finish = ceil(len(skills) / 3)
+        elif col == 1:
+            remaining = len(skills) - last_finish
+            if remaining:
+                finish = last_finish + ceil(remaining / 2)
+        else:
+            finish = None
+        start = last_finish
+        last_finish = finish
+
+        for skill in ordered_skills[start:finish]:
+            columns[col] += _dotted_display(skill, skills[skill])
+    return columns
+
+
+def _dotted_display(name, value):
+    """Prepare a numeric entry on the character sheet for dotted display."""
+    base = min(value, 5)
+    extra = max(value - 5, 0)
+
+    rating_output = DOT * base
+    rating_output += NO_DOT * (5 - base)
+    if extra:
+        rating_output += ' '
+        rating_output += DOT * extra
+    return '{}: {}\n'.format(name.title(), rating_output)
+
+
+def _format_resource(state):
+    """Prepare a resource (e.g. blood) for dotted display."""
+    output = ''
+    for pos in range(state['max']):
+        # Add a newline every ten and a space every five blood for
+        # readability
+        if pos % 15 == 0 and pos > 0:
+            output += '\n'
+        elif pos % 5 == 0 and pos > 0:
+            output += ' '
+
+        output += DOT if pos < state['current'] else NO_DOT
+    return output
+
+
+def _format_health(health_state):
+    """Format character health for display."""
+    output = ''
+
+    damage_applied = 0
+    for level in ['healthy', 'injured', 'incapacitated']:
+        output += '{}: '.format(level.capitalize())
+
+        for _ in range(health_state['levels'][level]):
+            if damage_applied < len(health_state['damage']):
+                damage_type = health_state['damage'][damage_applied]
+                if damage_type == 'normal':
+                    output += NO_DOT
+                else:
+                    output += SKULL
+                damage_applied += 1
+            else:
+                output += DOT
+        output += '\n'
+
+    if damage_applied < len(health_state['damage']):
+        output += 'Excess: '
+        for damage_type in health_state['damage'][damage_applied:]:
+            if damage_type == 'normal':
+                output += NO_DOT
+            else:
+                output += SKULL
+
+    return output
+
+
+def _format_morality(morality_state):
+    """Format morality for display."""
+    output = ''
+
+    for pos in range(morality_state['max']):
+        if pos % 5 == 0 and pos > 0:
+            output += ' '
+
+        output += DOT if pos < morality_state['current'] else NO_DOT
+    output += '\n\n'
+    output += '**Beast traits**\n'
+    if morality_state['beast traits']:
+        for pos in range(morality_state['beast traits']):
+            if pos % 5 == 0 and pos > 0:
+                output += ' '
+
+            output += DOT
+    else:
+        output += 'None'
+    return output
+
+
+@show.command('character')
+async def show_character(ctx): # pylint: disable=R0914
+    """Show a character sheet."""
     embed = Embed(
         title='Character sheet',
     )
@@ -642,27 +775,6 @@ async def emb(ctx):
             inline=False,
         )
 
-    # Add attributes
-    def _format_attribute(attribute):
-        output = ''
-        value = attribute['value']
-
-        base = min(value, 10)
-        output = DOT * base + NO_DOT * (10 - base)
-        # Insert a space for readability
-        output = output[:5] + ' ' + output[5:]
-        output += '\n'
-
-        bonus = max(value - 10, 0)
-        output += 'Bonus: '
-        output += DOT * bonus + NO_DOT * (5 - bonus)
-        output += '\n'
-
-        output += ' '.join(
-            focus.title() for focus in attribute['focuses']
-        )
-        return output
-
     attributes = character['attributes']
     embed.add_field(
         name=(
@@ -679,38 +791,6 @@ async def emb(ctx):
         name='\u200b\nSocial',
         value=_format_attribute(attributes['social']),
     )
-
-    def _make_skill_columns(skills):
-        columns = ['\u200b', '\u200b', '\u200b']
-        ordered_skills = sorted(list(skills.keys()),
-                                key=str.casefold)
-        last_finish = 0
-        for col in range(3):
-            if col == 0:
-                finish = ceil(len(skills) / 3)
-            elif col == 1:
-                remaining = len(skills) - last_finish
-                if remaining:
-                    finish = last_finish + ceil(remaining / 2)
-            else:
-                finish = None
-            start = last_finish
-            last_finish = finish
-
-            for skill in ordered_skills[start:finish]:
-                columns[col] += _dotted_display(skill, skills[skill])
-        return columns
-
-    def _dotted_display(name, value):
-        base = min(value, 5)
-        extra = max(value - 5, 0)
-
-        rating_output = DOT * base
-        rating_output += NO_DOT * (5 - base)
-        if extra:
-            rating_output += ' '
-            rating_output += DOT * extra
-        return '{}: {}\n'.format(name.title(), rating_output)
 
     # Add skills
     skills = character['skills']
@@ -765,68 +845,6 @@ async def emb(ctx):
         value=output,
     )
 
-    def _format_resource(state):
-        output = ''
-        for pos in range(state['max']):
-            # Add a newline every ten and a space every five blood for
-            # readability
-            if pos % 15 == 0 and pos > 0:
-                output += '\n'
-            elif pos % 5 == 0 and pos > 0:
-                output += ' '
-
-            output += DOT if pos < state['current'] else NO_DOT
-        return output
-
-    def _format_health(health_state):
-        output = ''
-
-        damage_applied = 0
-        for level in ['healthy', 'injured', 'incapacitated']:
-            output += '{}: '.format(level.capitalize())
-
-            for _ in range(health_state['levels'][level]):
-                if damage_applied < len(health_state['damage']):
-                    damage_type = health_state['damage'][damage_applied]
-                    if damage_type == 'normal':
-                        output += NO_DOT
-                    else:
-                        output += SKULL
-                    damage_applied += 1
-                else:
-                    output += DOT
-            output += '\n'
-
-        if damage_applied < len(health_state['damage']):
-            output += 'Excess: '
-            for damage_type in health_state['damage'][damage_applied:]:
-                if damage_type == 'normal':
-                    output += NO_DOT
-                else:
-                    output += SKULL
-
-        return output
-
-    def _format_morality(morality_state):
-        output = ''
-
-        for pos in range(morality_state['max']):
-            if pos % 5 == 0 and pos > 0:
-                output += ' '
-
-            output += DOT if pos < morality_state['current'] else NO_DOT
-        output += '\n\n'
-        output += '**Beast traits**\n'
-        if morality_state['beast traits']:
-            for pos in range(morality_state['beast traits']):
-                if pos % 5 == 0 and pos > 0:
-                    output += ' '
-
-                output += DOT
-        else:
-            output += 'None'
-        return output
-
     # Add blood, willpower, morality (incl. beast traits), health
     state = character['state']
     blood_and_willpower_output = _format_resource(state['blood'])
@@ -851,6 +869,9 @@ async def emb(ctx):
     )
 
     await ctx.send(embed=embed)
+
+
+# TODO: Show equipment on character
 
 
 def generate_partials(group=None):
