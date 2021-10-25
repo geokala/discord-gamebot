@@ -871,7 +871,38 @@ async def show_character(ctx): # pylint: disable=R0914
     await ctx.send(embed=embed)
 
 
-# TODO: Show equipment on character
+@show.command('equipment')
+async def show_equipment(ctx):
+    """Show a character's equipment."""
+    character = SESSION.get_player_dict(ctx.message.author.id)
+
+    owned_equipment = sorted(character['equipment'],
+                             key=str.casefold)
+
+    embed = Embed(
+        title='Equipment for {}'.format(character['header']['character']),
+    )
+
+    if owned_equipment:
+        for item in owned_equipment:
+            item_details = SESSION.equipment[item]
+            details = '({})'.format(item_details['category'])
+            if item_details['qualities']:
+                details += '\n\u200b\n{}'.format(
+                    '\n'.join(quality.title()
+                              for quality in item_details['qualities']),
+                )
+
+            embed.add_field(
+                name=item,
+                value=details,
+            )
+    else:
+        embed.description = 'None'
+
+    await ctx.send(embed=embed)
+
+
 # TODO: Save (on ctrl+c or close)
 # TODO: Load (on_ready)
 
