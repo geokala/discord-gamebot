@@ -3,6 +3,8 @@
 import json
 from math import ceil
 import random
+import signal
+import sys
 
 from discord import Embed, Game
 from discord.ext.commands import Bot, is_owner
@@ -555,6 +557,13 @@ async def gain_morality(ctx):
                                    ctx.message.author.id)
 
 
+def _save_on_ctrl_c():
+    """Save if exiting with ctrl+c."""
+    print('Saving on SIGINT')
+    SESSION.save(CONFIG['vamp_save_path'])
+    sys.exit(0)
+
+
 @CLIENT.event
 async def on_ready():
     """Output a message when connected"""
@@ -562,6 +571,7 @@ async def on_ready():
     await CLIENT.change_presence(activity=Game(
         name="with blood.",
     ))
+    CLIENT.loop.add_signal_handler(signal.SIGINT, _save_on_ctrl_c)
 
 
 @CLIENT.command()
@@ -575,6 +585,7 @@ async def hello(ctx):
 async def close(_):
     """Disconnect the bot and stop running."""
     print("Closing by owner's demand.")
+    SESSION.save(CONFIG['vamp_save_path'])
     try:
         await CLIENT.close()
     except websockets.exceptions.ConnectionClosedOK:
@@ -901,10 +912,6 @@ async def show_equipment(ctx):
         embed.description = 'None'
 
     await ctx.send(embed=embed)
-
-
-# TODO: Save (on ctrl+c or close)
-# TODO: Load (on_ready)
 
 
 def generate_partials(group=None):

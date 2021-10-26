@@ -185,8 +185,10 @@ class Character:
 
     def from_json(self, json_data):
         """Load this character from a json dump."""
-        data = json.loads(json_data)
+        self.from_dict(json.loads(json_data))
 
+    def from_dict(self, data):
+        """Load this character from a dict."""
         header = data['header']
         self.player = header['player']
         self.character = header['character']

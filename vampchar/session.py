@@ -1,12 +1,12 @@
 """Session management for vampire sessions."""
 from copy import deepcopy
+import json
+import os
+import sys
 
 from .sheet import Character
 
-
-DOT = '•'
-NO_DOT = '◦'
-STAR = '★'
+SAVE_NAME = 'session.save'
 
 
 def support_undo(func):
@@ -33,11 +33,36 @@ class Session: # pylint: disable=R0904
 
     def load(self, session_save_path):
         """Load the game from its save path."""
-        # TODO
+        save_path = os.path.join(session_save_path, SAVE_NAME)
+        if not os.path.exists(save_path):
+            return
+
+        with open(save_path, encoding='utf-8') as save_handle:
+            data = json.load(save_handle)
+
+        self.equipment = data['equipment']
+        for player_id, character_data in data['player_characters'].items():
+            character = Character()
+            character.from_dict(character_data)
+            self.player_characters[int(player_id)] = character
 
     def save(self, session_save_path):
         """Save the game to its save path."""
-        # TODO
+        save_data = json.dumps({
+            'equipment': self.equipment,
+            'player_characters': {
+                player_id: sheet.to_dict()
+                for player_id, sheet in self.player_characters.items()
+            },
+        })
+        try:
+            save_path = os.path.join(session_save_path, SAVE_NAME)
+            with open(save_path, 'w', encoding='utf-8') as save_handle:
+                save_handle.write(save_data + '\n')
+        except Exception as _:  # pylint: disable=W0703
+            sys.stderr.write('Failed to write save data:\n')
+            sys.stderr.write('Save data: {}\n'.format(save_data))
+            raise
 
     def add_player(self, player_id, player_name, reset=False):
         """Add a player to the game."""
