@@ -29,10 +29,14 @@ def load_config(path):
 @CLIENT.command()
 async def rps(ctx):
     """Get a rock-paper-scissors result."""
-    character = SESSION.get_player_dict(ctx.message.author.id)
+    if await ctx.bot.is_owner(ctx.message.author):
+        character_name = 'Storyteller'
+    else:
+        character = SESSION.get_player_dict(ctx.message.author.id)
+        character_name = character['header']['character'],
     await ctx.send(
         '{character_name} {result}'.format(
-            character_name=character['header']['character'],
+            character_name=character_name,
             result=random.choice(['wins', 'loses', 'draws']),
         )
     )
