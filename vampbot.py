@@ -29,8 +29,12 @@ def load_config(path):
 @CLIENT.command()
 async def rps(ctx):
     """Get a rock-paper-scissors result."""
+    character = SESSION.get_player_dict(ctx.message.author.id)
     await ctx.send(
-        'You {}'.format(random.choice(['win', 'lose', 'draw']))
+        '{character_name} {result}'.format(
+            character_name=character['header']['character'],
+            result=random.choice(['wins', 'loses', 'draws']),
+        )
     )
 
 
