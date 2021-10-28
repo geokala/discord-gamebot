@@ -55,13 +55,6 @@ async def undo(ctx):
     await _call_session_and_output(ctx, SESSION.undo, ctx.message.author.id)
 
 
-@CLIENT.command()
-async def get(ctx):
-    """Get the character sheet."""
-    await _call_session_and_output(
-        ctx, SESSION.get_player_json, ctx.message.author.id)
-
-
 async def _call_session_and_output(ctx, command, *args, **kwargs):
     """Call a session command and output the result."""
     try:
@@ -74,6 +67,7 @@ async def _call_session_and_output(ctx, command, *args, **kwargs):
 async def award(ctx, amount, reason):
     """Award XP."""
     await _call_session_and_output(ctx, SESSION.award_xp, amount, reason)
+
 
 @CLIENT.command()
 async def begin(ctx):
