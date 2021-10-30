@@ -1,4 +1,5 @@
 #! /usr/bin/env python3
+# pylint: disable=C0302
 """Discord based game bot."""
 import json
 from math import ceil
@@ -33,7 +34,7 @@ async def rps(ctx):
         character_name = 'Storyteller'
     else:
         character = SESSION.get_player_dict(ctx.message.author.id)
-        character_name = character['header']['character'],
+        character_name = character['header']['character']
     await ctx.send(
         '{character_name} {result}'.format(
             character_name=character_name,
@@ -42,13 +43,61 @@ async def rps(ctx):
     )
 
 
-@CLIENT.command()
-async def join(ctx):
-    """Join the game, creating a character."""
-    await _call_session_and_output(
-        ctx, SESSION.add_player,
-        ctx.message.author.id, ctx.message.author.display_name,
-    )
+@CLIENT.group('players')
+@is_owner()
+async def players(ctx):
+    """Manage players."""
+    if not ctx.subcommand_passed:
+        await ctx.send("Try !players with one of these: {}".format(
+            ", ".join([command.name for command in players.commands])))
+
+
+async def _get_player_id_and_name(message, ctx):
+    """Check a passed in message contains a player ID."""
+    message = message.strip()
+    if message.startswith('<@!') and message.endswith('>'):
+        # Expected to be in the form: <@!012345678901234567>
+        message = message.split('!')[1]
+        player_id = int(message.rstrip('>'))
+        player = await CLIENT.fetch_user(player_id)
+        return player_id, player.display_name
+    await ctx.send('Please @ a single channel member.')
+
+
+@players.group('add')
+async def player_add(ctx, player):
+    """Add a player to the game as a player character."""
+    player_details = await _get_player_id_and_name(player, ctx)
+    if player_details is not None:
+        await _call_session_and_output(
+            ctx, SESSION.add_player, *player_details
+        )
+
+
+@players.group('remove')
+async def player_remove(ctx, player):
+    """Remove a player from the game."""
+    player_details = await _get_player_id_and_name(player, ctx)
+    if player_details is not None:
+        await _call_session_and_output(
+            ctx, SESSION.remove_player, *player_details
+        )
+
+
+@players.group('list')
+async def player_list(ctx):
+    """List players."""
+    output = '**Players**\n'
+    for player_id in sorted(list(
+        SESSION.player_characters.keys()
+    )):
+        player = await CLIENT.fetch_user(player_id)
+        output += player.display_name
+        on_sheet = SESSION.player_characters[player_id].player
+        if player.display_name != on_sheet:
+            output += ' (on sheet as: {}'.format(on_sheet)
+        output += '\n'
+    await ctx.send(output)
 
 
 @CLIENT.command()

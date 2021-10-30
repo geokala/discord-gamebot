@@ -74,6 +74,13 @@ class Session: # pylint: disable=R0904
             return "Reset {}.".format(player_name)
         return "Added {}.".format(player_name)
 
+    def remove_player(self, player_id, player_name):
+        """Remove a player from the game."""
+        if player_id not in self.player_characters:
+            raise BadInput('{} was not a member.'.format(player_name))
+        self.player_characters.pop(player_id)
+        return "Removed {}".format(player_name)
+
     def award_xp(self, amount, reason):
         """Award all players some XP for a given reason."""
         amount = self._check_int(amount)
